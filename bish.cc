@@ -3,27 +3,57 @@
 #include <string>
 #include <string.h>
 #include <unistd.h>
+#include <vector>
+#include <sys/wait.h>
+#include <sys/types.h>
 using namespace std;
 
-char** parse_line(char* line) {
-  char** cmd_w_args;
-  int cnt = 0;
-  char *pch = strtok (line," ");
-  while (pch != NULL) {
-    cmd_w_args[cnt] = pch;
-    pch = strtok (NULL, " "); cnt++;
-  }
-  return cmd_w_args;
+// globals
+// const char **args;
+
+// util methods
+vector<string> split(const char *str, char c = ' '){
+  vector<string> result;
+  do {
+    const char *begin = str;
+    while(*str != c && *str) str++;
+    result.push_back(string(begin, str));
+  } while (0 != *str++);
+  return result;
 }
 
+void parse_args_vector(vector<string> vargs, char*** args) {
+  *args = (char**)malloc((vargs.size()+1)*sizeof(char*));
+  int i = 0;
+  for(auto it = vargs.begin(); it < vargs.end(); ++it, i++) {
+    string tmp = *it;
+    *args[i] = (char *)tmp.c_str();
+  }
+  *args[vargs.size()] = NULL;
+}
+
+// main
 int main(int argc, char **argv){
+  char **args;
   string line;
+  int status;
+
+  vector<string> path = split(getenv("PATH"), ':');
 
   cout << "bish$ ";
   while (getline(cin, line)) {
-    cout << line << endl;
-    execv(line, parse_line(line.c_str()), NULL);
+    parse_args_vector(split(line.c_str()), &args);
+    if (fork() == 0){
+      cout << "in da child" << endl;
+      execv(args[0], args);
+      perror("fork child process");
+    }
+    else {
+      cout << "wiating" << endl;
+      wait(&status);
+    }
     cout << "bish$ ";
+    free(args);
   }
   return 0;
 }
