@@ -19,32 +19,35 @@ vector<string> split(const char *str, char c = ' '){
   return result;
 }
 
-void parse_args(vector<string> vargs, char*** args) {
-  *args = (char**)malloc((vargs.size()+1)*sizeof(char*));
-  int i = 0;
-  for(auto it = vargs.begin(); it < vargs.end(); ++it, i++) {
-    string tmp = *it;
-    *args[i] = (char *)tmp.c_str();
-    // cout << *it << endl;
+char** parse_args(vector<string> vargs) {
+  char** args = new char *[vargs.size()+1];
+  // http://stackoverflow.com/questions/26032039/convert-vectorstring-into-char-c
+  for (size_t i = 0; i < vargs.size(); ++i) {
+    args[i] = new char[vargs[i].size() + 1];
+    strcpy(args[i], vargs[i].c_str());
   }
-  *args[vargs.size()] = NULL;
+  // use executable name as first
+  // strcpy(args[0], split(args[0], '/'),back().c_str());
+  args[vargs.size()] = nullptr;
+  return args;
 }
 
-// main
+
+
 int main(int argc, char **argv){
-  char **args;
   string line;
   int status;
-
   vector<string> path = split(getenv("PATH"), ':');
 
-  cout << get_current_dir_name() << "$ ";
+  cout << "\e[92m" << get_current_dir_name() << " $\e[0m ";
+
   while (getline(cin, line)) {
+    char **args = parse_args(split(line.c_str()));
 
-    parse_args(split(line.c_str()), &args);
-
+    // handle exit
     // http://www.linuxquestions.org/questions/programming-9/making-a-c-shell-775690/
     if (strcmp(args[0], "exit") == 0) return 0;
+    // handle chdir
     if (!strcmp(args[0], "cd")) {
       if (args[1] == NULL) {
         if (chdir("/") < 0) perror("chdir");
@@ -52,28 +55,45 @@ int main(int argc, char **argv){
       else {
         if (chdir(args[1]) < 0) perror("chdir");
       }
-    } else {
+    }
+    // process the line.
+    else {
       pid_t kidpid = fork();
+      // fork error
       if (kidpid < 0) {
         perror("fork");
         return -1;
       }
+      // run it
+      // also check the path for things
       else if (kidpid == 0){
-        cout << args[0] << endl;
+        // try to run it as is
+        int e;
+        e = execv(args[0], args);
+        cout << "return from exec on fullpath: " e << endl;
+        // search the path
         for (auto it: path) {
-          string searchpath = string() + it + "/" + string(args[0]);
+          cout << "Searching path";
+          char* searchpath = (char*)it.c_str();
+          strcat(searchpath, "/");
+          strcat(searchpath, args[1]);
           cout << searchpath << endl;
-          execv(searchpath.c_str(), args);
+          execv(searchpath, args);
         }
+
+        // nothing found here...
         perror("child process");
       }
+      // parent waits for kid to die
       else {
-        wait(&status);
+        int waitstatus;
+        wait(&waitstatus);
+        status = WEXITSTATUS(waitstatus);
       }
     }
 
-    cout << get_current_dir_name() << "$ ";
-    free(args);
+    delete[] args;
+    cout << "\e[92m" << get_current_dir_name() << " $\e[0m ";
   }
   return 0;
 }
