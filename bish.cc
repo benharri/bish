@@ -26,8 +26,8 @@ void parse_args_vector(vector<string> vargs, char*** args) {
   *args = (char**)malloc((vargs.size()+1)*sizeof(char*));
   int i = 0;
   for(auto it = vargs.begin(); it < vargs.end(); ++it, i++) {
-    string tmp = *it;
-    *args[i] = (char *)tmp.c_str();
+    // string tmp = *it;
+    *args[i] = (char *)*it.c_str();
   }
   *args[vargs.size()] = NULL;
 }
