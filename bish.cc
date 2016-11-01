@@ -68,17 +68,18 @@ int main(int argc, char **argv){
       // also check the path for things
       else if (kidpid == 0){
         // try to run it as is
-        int e;
-        e = execv(args[0], args);
-        cout << "return from exec on fullpath: " e << endl;
+        int e = execv(args[0], args);
+        // cout << "return from exec on fullpath: " << e << endl;
         // search the path
-        for (auto it: path) {
-          cout << "Searching path";
-          char* searchpath = (char*)it.c_str();
-          strcat(searchpath, "/");
-          strcat(searchpath, args[1]);
-          cout << searchpath << endl;
-          execv(searchpath, args);
+        if (e < 0) {
+          // cout << "Searching path";
+          for (auto it: path) {
+            char* searchpath = (char*)it.c_str();
+            strcat(searchpath, "/");
+            strcat(searchpath, args[0]);
+            // cout << searchpath << endl;
+            execv(searchpath, args);
+          }
         }
 
         // nothing found here...
@@ -86,9 +87,23 @@ int main(int argc, char **argv){
       }
       // parent waits for kid to die
       else {
-        int waitstatus;
-        wait(&waitstatus);
-        status = WEXITSTATUS(waitstatus);
+
+        wait(&status);
+        if (WIFEXITED(status)) {
+          int exstatus = WEXITSTATUS(status);
+          // if (exstatus == 0) {
+            // Program succeeded
+            cout << "Status:" << exstatus;
+          // }
+          // else {
+            // Program failed but exited normally
+            // cout << "";
+          // }
+        }
+        else {
+            // Program exited abnormally
+          cout << "Program exited abnormally" << endl;
+        }
       }
     }
 
