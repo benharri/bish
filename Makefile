@@ -1,5 +1,5 @@
 CSW = -O3 -Wall -std=c++11 -ggdb
-LSW = -std=c++11
+LSW = -lreadline
 
 all:
 	make bish

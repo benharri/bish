@@ -6,7 +6,18 @@
 #include <vector>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <signal.h>
+#include <sstream>
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 using namespace std;
+
+// http://stackoverflow.com/questions/17766550/ctrl-c-interrupt-event-handling-in-linux
+volatile sig_atomic_t flag = 0;
+void ctrl_c_handler(int sig) {
+  flag = 1;
+}
 
 // util methods
 vector<string> split(const char *str, char c = ' '){
@@ -26,8 +37,6 @@ char** parse_args(vector<string> vargs) {
     args[i] = new char[vargs[i].size() + 1];
     strcpy(args[i], vargs[i].c_str());
   }
-  // use executable name as first
-  // strcpy(args[0], split(args[0], '/'),back().c_str());
   args[vargs.size()] = nullptr;
   return args;
 }
@@ -36,13 +45,28 @@ char** parse_args(vector<string> vargs) {
 
 int main(int argc, char **argv){
   string line;
-  int status;
   vector<string> path = split(getenv("PATH"), ':');
 
-  cout << "\e[92m" << get_current_dir_name() << " $\e[0m ";
+  // register ctrl c handler
+  signal(SIGINT, ctrl_c_handler);
 
-  while (getline(cin, line)) {
-    char **args = parse_args(split(line.c_str()));
+  stringstream prompt;
+  prompt << "\e[92m" << get_current_dir_name() << " $\e[0m ";
+
+  static char* line_read = (char*)NULL;
+  while ((line_read = readline(prompt.str().c_str()))) {
+
+    if (flag) {
+      printf("\n");
+      continue;
+      flag = 0;
+    }
+
+    char **args = parse_args(split(line_read));
+    if (line_read) {
+      free(line_read);
+      line_read = (char*)NULL;
+    }
 
     // handle exit
     // http://www.linuxquestions.org/questions/programming-9/making-a-c-shell-775690/
@@ -88,6 +112,7 @@ int main(int argc, char **argv){
       // parent waits for kid to die
       else {
 
+        int status;
         wait(&status);
         if (WIFEXITED(status)) {
           int exstatus = WEXITSTATUS(status);
@@ -108,7 +133,7 @@ int main(int argc, char **argv){
     }
 
     delete[] args;
-    cout << "\e[92m" << get_current_dir_name() << " $\e[0m ";
+    // cout << "\e[92m" << get_current_dir_name() << " $\e[0m ";
   }
   return 0;
 }
