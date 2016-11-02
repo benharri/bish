@@ -50,7 +50,7 @@ int main(int argc, char **argv){
 
   // build prompt
   stringstream prompt;
-  prompt << "bish\e[92m" << get_current_dir_name() << " $\e[0m ";
+  prompt << "bish:\e[92m" << get_current_dir_name() << " $\e[0m ";
 
   // set up history
   using_history();
@@ -62,9 +62,8 @@ int main(int argc, char **argv){
   while (!done) {
 
     prompt.str("");
-    prompt << "bish\e[92m" << get_current_dir_name() << " $\e[0m ";
+    prompt << "bish:\e[92m" << get_current_dir_name() << " $\e[0m ";
 
-    line = (char*)NULL;
     line = readline(prompt.str().c_str());
     if (line == NULL) break;
     if (strcmp(line, "") == 0) continue;
@@ -112,6 +111,7 @@ int main(int argc, char **argv){
           strcat(searchpath, args[0]);
 
           execv(searchpath, args);
+
           cout << endl;
         }
 
