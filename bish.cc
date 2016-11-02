@@ -24,13 +24,13 @@ vector<string> split(const char *str, char c = ' '){
   vector<string> result;
   do {
     const char *begin = str;
-    while(*str != c && *str) str++;
+    while (*str != c && *str) str++;
     result.push_back(string(begin, str));
   } while (0 != *str++);
   return result;
 }
 
-char** parse_args(vector<string> vargs) {
+char** v_to_cpp(vector<string> vargs) {
   char** args = new char *[vargs.size()+1];
   // http://stackoverflow.com/questions/26032039/convert-vectorstring-into-char-c
   for (size_t i = 0; i < vargs.size(); ++i) {
@@ -44,33 +44,65 @@ char** parse_args(vector<string> vargs) {
 
 
 int main(int argc, char **argv){
-  string line;
+  int done = 0;
+  static char* line = (char*)NULL;
   vector<string> path = split(getenv("PATH"), ':');
+
+  // build prompt
+  stringstream prompt;
+  prompt << "\e[92m" << get_current_dir_name() << " $\e[0m ";
+
+  // set up history
+  using_history();
+  read_history("~/.bish_history");
 
   // register ctrl c handler
   signal(SIGINT, ctrl_c_handler);
 
-  stringstream prompt;
-  prompt << "\e[92m" << get_current_dir_name() << " $\e[0m ";
+  while (!done) {
+    // Do stuff if the ctrl c flag is set?
+    // if (flag) {
+    //   printf("\n");
+    //   continue;
+    //   flag = 0;
+    // }
 
-  static char* line_read = (char*)NULL;
-  while ((line_read = readline(prompt.str().c_str()))) {
+    // read the line and split it into a char**
+    line = readline(prompt.str().c_str());
+    // if (!line) {
+    //   done = 1;
+    //   break;
+    // }
 
-    if (flag) {
-      printf("\n");
-      continue;
-      flag = 0;
-    }
+    // if (line[0]) {
+    //   char *expansion;
+    //   int result;
+    //   result = history_expand(line, &expansion);
+    //   if (result) {
+    //     fprintf(stderr, "%s\n", expansion);
+    //   }
+    //   if (result < 0 || result == 2) {
+    //     free(expansion);
+    //     continue;
+    //   }
+    //   add_history(expansion);
+    //   strncpy(line, expansion, sizeof(line) - 1);
+    //   free(expansion);
+    // } else done = 1;
 
-    char **args = parse_args(split(line_read));
-    if (line_read) {
-      free(line_read);
-      line_read = (char*)NULL;
+    if (line && *line) add_history (line);
+    else { done = 1; continue; }
+
+    char **args = v_to_cpp(split(line));
+
+    if (line) {
+      free(line);
+      line = (char*)NULL;
     }
 
     // handle exit
     // http://www.linuxquestions.org/questions/programming-9/making-a-c-shell-775690/
-    if (strcmp(args[0], "exit") == 0) return 0;
+    if (strcmp(args[0], "exit") == 0) { done = 1; continue; };
     // handle chdir
     if (!strcmp(args[0], "cd")) {
       if (args[1] == NULL) {
@@ -107,7 +139,7 @@ int main(int argc, char **argv){
         }
 
         // nothing found here...
-        perror("child process");
+        perror("bish");
       }
       // parent waits for kid to die
       else {
@@ -133,7 +165,7 @@ int main(int argc, char **argv){
     }
 
     delete[] args;
-    // cout << "\e[92m" << get_current_dir_name() << " $\e[0m ";
   }
+  write_history("~/.bish_history");
   return 0;
 }
