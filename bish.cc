@@ -63,33 +63,13 @@ int main(int argc, char **argv){
 
     prompt.str("");
     prompt << "bish\e[92m" << get_current_dir_name() << " $\e[0m ";
+
     line = (char*)NULL;
     line = readline(prompt.str().c_str());
-    if (!line) {
-      // done = 1;
-      break;
-    }
-
-    // if (line[0]) {
-    //   char *expansion;
-    //   int result;
-    //   result = history_expand(line, &expansion);
-    //   if (result) {
-    //     fprintf(stderr, "%s\n", expansion);
-    //   }
-    //   if (result < 0 || result == 2) {
-    //     free(expansion);
-    //     continue;
-    //   }
-    //   add_history(expansion);
-    //   strncpy(line, expansion, sizeof(line) - 1);
-    //   free(expansion);
-    // } else done = 1;
-
+    if (line == NULL) break;
+    if (strcmp(line, "") == 0) continue;
     if (line && *line) add_history (line);
-
     char **args = v_to_cpp(split(line));
-
     free(line);
     line = (char*)NULL;
 
@@ -126,21 +106,18 @@ int main(int argc, char **argv){
         execv(args[0], args);
         // cout << "return from exec on fullpath: " << e << endl;
         // search the path
-        // if (e == -1) {
-          cout << "Searching path";
-          for (auto it: path) {
-            char* searchpath;
-            searchpath = strcpy(searchpath, (char*)it.c_str());
-            strcat(searchpath, "/");
-            strcat(searchpath, args[0]);
-            cout << searchpath << endl;
-            cout << "arg0" << args[0] << endl;
-            execv(searchpath, args);
-          }
-        // }
+        for (auto it: path) {
+          char* searchpath = strcpy(searchpath, it.c_str());
+          strcat(searchpath, "/");
+          strcat(searchpath, args[0]);
+
+          execv(searchpath, args);
+          cout << endl;
+        }
 
         // nothing found here...
-        perror("bish");
+        printf("that's not a command, bish");
+        // perror("bish");
         exit(1);
       }
       // parent waits for kid to die
@@ -151,7 +128,7 @@ int main(int argc, char **argv){
           printf("Child process ended because of signal %d\n", WTERMSIG(status));
         }
         else if (WIFEXITED(status) != 0) {
-          printf("Child process did not end normally; status = %d\n", WEXITSTATUS(status));
+          printf("\n(%d):", WEXITSTATUS(status));
         }
         else {
             // Program exited abnormally
@@ -162,6 +139,7 @@ int main(int argc, char **argv){
 
     delete[] args;
   }
+  printf("\n");
   write_history("~/.bish_history");
   return 0;
 }
