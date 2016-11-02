@@ -13,9 +13,9 @@ if a team gets 40 (and each person gets 13.3333), I'll give each student 20.
 
 
 The Shell Assignment (total 42 points)
-+ 1 Can run an executable
++ 1 ~~Can run an executable~~
     + `/bin/ls`
-+ 1 You search the path for the executable
++ 1 ~~You search the path for the executable~~
     + `ls`
 + 1 Can do file input redirection "<"
     + `ls > fred`
@@ -35,7 +35,7 @@ The Shell Assignment (total 42 points)
     + `ls $HOME`
 + 2 Does filename expansion "glob" (Hint:  Use the built in glob.)
     + `ls a*b`
-+ 1 Knows how to change directory
++ 1 ~~Knows how to change directory~~
     + `cd /fred`
 + 1 Bang last command
     + `!l` runs ls
@@ -56,14 +56,14 @@ The Shell Assignment (total 42 points)
     + `ctrl + c` = back to prompt
 + 1 Replace "~" with the home directory
     + `rm ~/junkfile`
-+ 1 Control-L clears the screen
++ 1 ~~Control-L clears the screen~~
     + `ctrl-l` = clear screen
 + 3 When they misspell a command, offer a suggestion
     + (user) `lss`
     + (shell) Did you mean `ls`?
 + 2 Can run commands from a file
     + `. scriptFile.txt`
-+ 2 Tab Completion and Arrow History
++ 2 ~~Tab Completion~~ and Arrow History
 + 1 Saves and reloads history to a file
 + 2 Automatically runs a file called .myshell when it starts
 + 2 Only runs execuatables from an approved list
