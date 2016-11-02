@@ -14,10 +14,10 @@
 using namespace std;
 
 // http://stackoverflow.com/questions/17766550/ctrl-c-interrupt-event-handling-in-linux
-volatile sig_atomic_t flag = 0;
-void ctrl_c_handler(int sig) {
-  flag = 1;
-}
+// volatile sig_atomic_t flag = 0;
+// void ctrl_c_handler(int sig) {
+//   flag = 1;
+// }
 
 // util methods
 vector<string> split(const char *str, char c = ' '){
@@ -44,7 +44,7 @@ char** v_to_cpp(vector<string> vargs) {
 
 
 int main(int argc, char **argv){
-  int done = 0, status;
+  int done = 0;
   static char* line = (char*)NULL;
   vector<string> path = split(getenv("PATH"), ':');
 
@@ -66,7 +66,7 @@ int main(int argc, char **argv){
     line = (char*)NULL;
     line = readline(prompt.str().c_str());
     if (!line) {
-      done = 1;
+      // done = 1;
       break;
     }
 
@@ -111,6 +111,7 @@ int main(int argc, char **argv){
     }
     // process the line.
     else {
+
       pid_t kidpid = fork();
       // fork error
       if (kidpid < 0) {
@@ -120,11 +121,16 @@ int main(int argc, char **argv){
       // run it
       // also check the path for things
       else if (kidpid == 0){
+        // try to run it as is
+        // int e =
+        execv(args[0], args);
+        // cout << "return from exec on fullpath: " << e << endl;
         // search the path
         // if (e == -1) {
           cout << "Searching path";
           for (auto it: path) {
-            char* searchpath = strcpy(searchpath, (char*)it.c_str());
+            char* searchpath;
+            searchpath = strcpy(searchpath, (char*)it.c_str());
             strcat(searchpath, "/");
             strcat(searchpath, args[0]);
             cout << searchpath << endl;
@@ -132,9 +138,6 @@ int main(int argc, char **argv){
             execv(searchpath, args);
           }
         // }
-        // try to run it as is
-        int e = execv(args[0], args);
-        cout << "return from exec on fullpath: " << e << endl;
 
         // nothing found here...
         perror("bish");
@@ -142,22 +145,13 @@ int main(int argc, char **argv){
       }
       // parent waits for kid to die
       else {
-
+        int status;
         if (wait(&status) == -1) perror("wait error");
         if (WIFSIGNALED(status) != 0) {
           printf("Child process ended because of signal %d\n", WTERMSIG(status));
         }
         else if (WIFEXITED(status) != 0) {
           printf("Child process did not end normally; status = %d\n", WEXITSTATUS(status));
-          // int exstatus = WEXITSTATUS(status);
-          // if (exstatus == 0) {
-          //   // Program succeeded
-          //   cout << "Status:" << exstatus;
-          // }
-          // else {
-          //   // Program failed but exited normally
-          //   cout << "";
-          // }
         }
         else {
             // Program exited abnormally
