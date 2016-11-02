@@ -44,35 +44,31 @@ char** v_to_cpp(vector<string> vargs) {
 
 
 int main(int argc, char **argv){
-  int done = 0;
+  int done = 0, status;
   static char* line = (char*)NULL;
   vector<string> path = split(getenv("PATH"), ':');
 
   // build prompt
   stringstream prompt;
-  prompt << "\e[92m" << get_current_dir_name() << " $\e[0m ";
+  prompt << "bish\e[92m" << get_current_dir_name() << " $\e[0m ";
 
   // set up history
   using_history();
   read_history("~/.bish_history");
 
   // register ctrl c handler
-  signal(SIGINT, ctrl_c_handler);
+  // signal(SIGINT, ctrl_c_handler);
 
   while (!done) {
-    // Do stuff if the ctrl c flag is set?
-    // if (flag) {
-    //   printf("\n");
-    //   continue;
-    //   flag = 0;
-    // }
 
-    // read the line and split it into a char**
+    prompt.str("");
+    prompt << "bish\e[92m" << get_current_dir_name() << " $\e[0m ";
+    line = (char*)NULL;
     line = readline(prompt.str().c_str());
-    // if (!line) {
-    //   done = 1;
-    //   break;
-    // }
+    if (!line) {
+      done = 1;
+      break;
+    }
 
     // if (line[0]) {
     //   char *expansion;
@@ -91,22 +87,23 @@ int main(int argc, char **argv){
     // } else done = 1;
 
     if (line && *line) add_history (line);
-    else { done = 1; continue; }
 
     char **args = v_to_cpp(split(line));
 
-    if (line) {
-      free(line);
-      line = (char*)NULL;
-    }
+    free(line);
+    line = (char*)NULL;
 
     // handle exit
     // http://www.linuxquestions.org/questions/programming-9/making-a-c-shell-775690/
-    if (strcmp(args[0], "exit") == 0) { done = 1; continue; };
+    if (strcmp(args[0], "exit") == 0) {
+      done = 1;
+      return 0;
+      // exit(0);
+    }
     // handle chdir
-    if (!strcmp(args[0], "cd")) {
+    else if (strcmp(args[0], "cd") == 0) {
       if (args[1] == NULL) {
-        if (chdir("/") < 0) perror("chdir");
+        if (chdir("~") < 0) perror("chdir");
       }
       else {
         if (chdir(args[1]) < 0) perror("chdir");
@@ -123,38 +120,43 @@ int main(int argc, char **argv){
       // run it
       // also check the path for things
       else if (kidpid == 0){
-        // try to run it as is
-        int e = execv(args[0], args);
-        // cout << "return from exec on fullpath: " << e << endl;
         // search the path
-        if (e < 0) {
-          // cout << "Searching path";
+        // if (e == -1) {
+          cout << "Searching path";
           for (auto it: path) {
-            char* searchpath = (char*)it.c_str();
+            char* searchpath = strcpy(searchpath, (char*)it.c_str());
             strcat(searchpath, "/");
             strcat(searchpath, args[0]);
-            // cout << searchpath << endl;
+            cout << searchpath << endl;
+            cout << "arg0" << args[0] << endl;
             execv(searchpath, args);
           }
-        }
+        // }
+        // try to run it as is
+        int e = execv(args[0], args);
+        cout << "return from exec on fullpath: " << e << endl;
 
         // nothing found here...
         perror("bish");
+        exit(1);
       }
       // parent waits for kid to die
       else {
 
-        int status;
-        wait(&status);
-        if (WIFEXITED(status)) {
-          int exstatus = WEXITSTATUS(status);
+        if (wait(&status) == -1) perror("wait error");
+        if (WIFSIGNALED(status) != 0) {
+          printf("Child process ended because of signal %d\n", WTERMSIG(status));
+        }
+        else if (WIFEXITED(status) != 0) {
+          printf("Child process did not end normally; status = %d\n", WEXITSTATUS(status));
+          // int exstatus = WEXITSTATUS(status);
           // if (exstatus == 0) {
-            // Program succeeded
-            cout << "Status:" << exstatus;
+          //   // Program succeeded
+          //   cout << "Status:" << exstatus;
           // }
           // else {
-            // Program failed but exited normally
-            // cout << "";
+          //   // Program failed but exited normally
+          //   cout << "";
           // }
         }
         else {
