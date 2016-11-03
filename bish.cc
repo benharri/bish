@@ -101,29 +101,18 @@ int main(int argc, char **argv){
       // also check the path for things
       else if (kidpid == 0){
         // try to run it as is
-        // int e =
         execv(args[0], args);
-        // cout << "return from exec on fullpath: " << e << endl;
         // search the path
         stringstream searchpath;
         for (auto it: path) {
-          // cout << it << endl;
           searchpath.str("");
           searchpath << it << "/" << args[0];
-          // strcpy(searchpath, it.c_str());
-          // strcat(searchpath, "/");
-          // strcat(searchpath, args[0]);
-          // cout << searchpath.str() << endl;
-
           execv(searchpath.str().c_str(), args);
-
-          // cout << endl;
         }
-
         // nothing found here...
         printf("that's not a command, bish");
-        // perror("bish");
         exit(1);
+
       }
       // parent waits for kid to die
       else {
