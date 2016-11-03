@@ -105,14 +105,19 @@ int main(int argc, char **argv){
         execv(args[0], args);
         // cout << "return from exec on fullpath: " << e << endl;
         // search the path
+        stringstream searchpath;
         for (auto it: path) {
-          char* searchpath = strcpy(searchpath, it.c_str());
-          strcat(searchpath, "/");
-          strcat(searchpath, args[0]);
+          // cout << it << endl;
+          searchpath.str("");
+          searchpath << it << "/" << args[0];
+          // strcpy(searchpath, it.c_str());
+          // strcat(searchpath, "/");
+          // strcat(searchpath, args[0]);
+          // cout << searchpath.str() << endl;
 
-          execv(searchpath, args);
+          execv(searchpath.str().c_str(), args);
 
-          cout << endl;
+          // cout << endl;
         }
 
         // nothing found here...
@@ -132,13 +137,13 @@ int main(int argc, char **argv){
           }
 
           if (WIFEXITED(status)) {
-            printf("exited, status=%d\n", WEXITSTATUS(status));
+            printf("(%d):", WEXITSTATUS(status));
           } else if (WIFSIGNALED(status)) {
-            printf("killed by signal %d\n", WTERMSIG(status));
+            printf("\nkilled by signal %d\n", WTERMSIG(status));
           } else if (WIFSTOPPED(status)) {
-            printf("stopped by signal %d\n", WSTOPSIG(status));
+            printf("\nstopped by signal %d\n", WSTOPSIG(status));
           } else if (WIFCONTINUED(status)) {
-            printf("continued\n");
+            printf("\ncontinued\n");
           }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
