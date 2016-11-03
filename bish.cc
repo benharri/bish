@@ -123,17 +123,25 @@ int main(int argc, char **argv){
       // parent waits for kid to die
       else {
         int status;
-        if (wait(&status) == -1) perror("wait error");
-        if (WIFSIGNALED(status) != 0) {
-          printf("Child process ended because of signal %d\n", WTERMSIG(status));
-        }
-        else if (WIFEXITED(status) != 0) {
-          printf("\n(%d):", WEXITSTATUS(status));
-        }
-        else {
-            // Program exited abnormally
-          cout << "Program exited abnormally" << endl;
-        }
+        pid_t w;
+        do {
+          w = waitpid(kidpid, &status, WUNTRACED | WCONTINUED);
+          if (w == -1) {
+            perror("waitpid");
+            exit(EXIT_FAILURE);
+          }
+
+          if (WIFEXITED(status)) {
+            printf("exited, status=%d\n", WEXITSTATUS(status));
+          } else if (WIFSIGNALED(status)) {
+            printf("killed by signal %d\n", WTERMSIG(status));
+          } else if (WIFSTOPPED(status)) {
+            printf("stopped by signal %d\n", WSTOPSIG(status));
+          } else if (WIFCONTINUED(status)) {
+            printf("continued\n");
+          }
+        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+
       }
     }
 
