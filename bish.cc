@@ -13,12 +13,6 @@
 #include <readline/history.h>
 using namespace std;
 
-// http://stackoverflow.com/questions/17766550/ctrl-c-interrupt-event-handling-in-linux
-// volatile sig_atomic_t flag = 0;
-// void ctrl_c_handler(int sig) {
-//   flag = 1;
-// }
-
 // util methods
 vector<string> split(const char *str, char c = ' '){
   vector<string> result;
@@ -44,50 +38,44 @@ char** v_to_cpp(vector<string> vargs) {
 
 
 int main(int argc, char **argv){
-  int done = 0;
+
+  stringstream prompt;
   static char* line = (char*)NULL;
   vector<string> path = split(getenv("PATH"), ':');
 
-  // build prompt
-  stringstream prompt;
-  prompt << "bish:\e[92m" << get_current_dir_name() << " $\e[0m ";
-
   // set up history
   using_history();
-  read_history("~/.bish_history");
+  if (read_history(".bish_history")) {
+    printf("history file not found. creating `.bish_history` in current directory.\n");
+    cout << "(" << system("touch .bish_history") << "):";
+  }
 
-  // register ctrl c handler
-  // signal(SIGINT, ctrl_c_handler);
-
-  while (!done) {
+  while ("bish") {
 
     prompt.str("");
-    prompt << "bish:\e[92m" << get_current_dir_name() << " $\e[0m ";
+    prompt << "\e[34mbish:\e[92m" << get_current_dir_name() << "\e[34m:$\e[0m ";
 
     line = readline(prompt.str().c_str());
     if (line == NULL) break;
     if (strcmp(line, "") == 0) continue;
     if (line && *line) add_history (line);
+
     char **args = v_to_cpp(split(line));
     free(line);
     line = (char*)NULL;
 
-    // handle exit
     // http://www.linuxquestions.org/questions/programming-9/making-a-c-shell-775690/
-    if (strcmp(args[0], "exit") == 0) {
-      done = 1;
-      return 0;
-      // exit(0);
-    }
+    if (strcmp(args[0], "exit") == 0) break;
     // handle chdir
     else if (strcmp(args[0], "cd") == 0) {
       if (args[1] == NULL) {
-        if (chdir("~") < 0) perror("chdir");
+        if (chdir("/") < 0) perror("chdir");
       }
       else {
         if (chdir(args[1]) < 0) perror("chdir");
       }
     }
+
     // process the line.
     else {
 
@@ -110,21 +98,22 @@ int main(int argc, char **argv){
           execv(searchpath.str().c_str(), args);
         }
         // nothing found here...
-        printf("that's not a command, bish");
+        printf("that's not a command, bish\n");
         exit(1);
 
       }
       // parent waits for kid to die
       else {
+
         int status;
         pid_t w;
+
         do {
           w = waitpid(kidpid, &status, WUNTRACED | WCONTINUED);
           if (w == -1) {
             perror("waitpid");
-            exit(EXIT_FAILURE);
+            exit(1);
           }
-
           if (WIFEXITED(status)) {
             printf("(%d):", WEXITSTATUS(status));
           } else if (WIFSIGNALED(status)) {
@@ -137,11 +126,16 @@ int main(int argc, char **argv){
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
       }
+
     }
 
+    // reset args array for the next prompt
     delete[] args;
+
   }
+
   printf("\n");
-  write_history("~/.bish_history");
+  if (write_history(".bish_history")) perror("write_history");
+
   return 0;
 }
