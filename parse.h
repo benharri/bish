@@ -1,13 +1,12 @@
 // Ben Harris
 
-#ifndef _PARSE_
-#define _PARSE_
+#ifndef _PARSE_H_
+#define _PARSE_H_
 
 #include <string>
 #include <vector>
 using namespace std;
 
-// method definitions
 // command struct
 struct command {
   char** args;
@@ -17,6 +16,7 @@ struct command {
   string outfile;
 };
 
+// method definitions
 void print_cmd(command *cmd);
 command *parse(vector<string> args);
 

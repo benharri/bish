@@ -1,7 +1,7 @@
 // Ben Harris
 
-#ifndef _util_fns_
-#define _util_fns_
+#ifndef _UTIL_FNS_H_
+#define _UTIL_FNS_H_
 
 #include <string>
 #include <string.h>
@@ -9,6 +9,7 @@
 using namespace std;
 
 // method definitions
+void ctrlCHandler(int sig);
 vector<string> split(const char *str, char c = ' ');
 char** v_to_cpp(vector<string> vargs);
 

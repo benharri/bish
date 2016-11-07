@@ -7,6 +7,10 @@
 using namespace std;
 
 
+void ctrlCHandler(int sig) {
+
+}
+
 // util methods
 vector<string> split(const char *str, char c) {
   vector<string> result;

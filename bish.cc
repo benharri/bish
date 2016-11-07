@@ -11,7 +11,7 @@
 #include <vector>
 #include <sys/wait.h>
 #include <sys/types.h>
-#include <sys/stat.h>
+// #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sstream>
@@ -24,6 +24,10 @@
 using namespace std;
 
 int main(int argc, char **argv){
+
+  struct sigaction act;
+  act.sa_handler = ctrlCHandler;
+  sigaction(SIGINT, &act, NULL);
 
   stringstream prompt;
   static char* line = (char*)NULL;
@@ -57,8 +61,7 @@ int main(int argc, char **argv){
     // char **args = v_to_cpp(split(line));
     // parse line
     command *cmd = parse(split(line));
-    // print_cmd(cmd);
-    // cout << endl;
+    print_cmd(cmd);
     // clear line var
     free(line);
     line = (char*)NULL;
@@ -89,9 +92,10 @@ int main(int argc, char **argv){
       // run it
       // also check the path for things
       else if (kidpid == 0){
+
         // io redirection
         if (cmd->outfile != "") {
-          int outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_EXCL, 0644);
+          int outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
           if (outfd < 0) {
             perror("outfile");
             exit(0);
@@ -101,6 +105,7 @@ int main(int argc, char **argv){
             exit(0);
           }
         }
+
         if (cmd->infile != "") {
           int infd = open(cmd->infile.c_str(), O_RDONLY);
           if (infd < 0) {
@@ -133,6 +138,7 @@ int main(int argc, char **argv){
 
         int status;
 
+        if (!cmd->background)
         do {
           if (waitpid(kidpid, &status, WUNTRACED | WCONTINUED) == -1) {
             perror("waitpid");

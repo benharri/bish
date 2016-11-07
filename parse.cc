@@ -13,11 +13,11 @@ void print_cmd(command *cmd) {
   // cout << "args: " << endl;
 
   if (cmd->background) cout << "backgroud: true" << endl;
-  else cout << "background: false" << endl;
 
-  if (cmd->piping.c_str()) cout << "piping to: " << cmd->piping << endl;
-  if (cmd->infile.c_str()) cout << "infile: " << cmd->infile << endl;
-  if (cmd->outfile.c_str()) cout << "outfile: " << cmd->outfile << endl;
+  if (cmd->piping != "") cout << "piping to: " << cmd->piping << endl;
+  if (cmd->infile != "") cout << "infile: " << cmd->infile << endl;
+  if (cmd->outfile != "") cout << "outfile: " << cmd->outfile << endl;
+  cout << endl;
 }
 
 
