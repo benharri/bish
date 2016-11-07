@@ -10,14 +10,7 @@ using namespace std;
 
 
 void print_cmd(command *cmd) {
-  cout << "args: " << endl;
-  int i = 0;
-  while (cmd->args[i]) {
-    int j = 0;
-    while (cmd->args[i][j]) {
-      cout << "\t" << i << ", " << j << ": " << cmd->args[i][j] << endl;
-    }
-  }
+  // cout << "args: " << endl;
 
   if (cmd->background) cout << "backgroud: true" << endl;
   else cout << "background: false" << endl;
@@ -68,6 +61,6 @@ command *parse(vector<string> args) {
 
     else cmd.push_back(it);
   }
-  parseinfo->args[0] = v_to_cpp(cmd);
+  parseinfo->args = v_to_cpp(cmd);
   return parseinfo;
 }

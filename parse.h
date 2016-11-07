@@ -10,7 +10,7 @@ using namespace std;
 // method definitions
 // command struct
 struct command {
-  char*** args;
+  char** args;
   bool background;
   string piping;
   string infile;

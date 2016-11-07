@@ -55,22 +55,24 @@ int main(int argc, char **argv){
     if (line && *line) add_history (line);
 
     // char **args = v_to_cpp(split(line));
+    // parse line
     command *cmd = parse(split(line));
     print_cmd(cmd);
-    // continue;
-
+    cout << endl;
+    // clear line var
     free(line);
     line = (char*)NULL;
 
     // http://www.linuxquestions.org/questions/programming-9/making-a-c-shell-775690/
-    if (strcmp(cmd->args[0][0], "exit") == 0) break;
+    if (strcmp(cmd->args[0], "exit") == 0) break;
+
     // handle chdir
-    else if (strcmp(cmd->args[0][0], "cd") == 0) {
-      if (cmd->args[0][1] == NULL) {
+    else if (strcmp(cmd->args[0], "cd") == 0) {
+      if (cmd->args[1] == NULL) {
         if (chdir(homedir) < 0) perror("chdir");
       }
       else {
-        if (chdir(cmd->args[0][1]) < 0) perror("chdir");
+        if (chdir(cmd->args[1]) < 0) perror("chdir");
       }
     }
 
@@ -83,17 +85,43 @@ int main(int argc, char **argv){
         perror("fork");
         return -1;
       }
+
       // run it
       // also check the path for things
       else if (kidpid == 0){
+        // io redirection
+        if (cmd->outfile != "") {
+          int outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_EXCL, 0644);
+          if (outfd < 0) {
+            perror("outfile");
+            exit(0);
+          }
+          if (dup2(outfd, 1) == -1) {
+            perror("dup2 outfile");
+            exit(0);
+          }
+        }
+        if (cmd->infile != "") {
+          int infd = open(cmd->infile.c_str(), O_RDONLY);
+          if (infd < 0) {
+            perror("infile");
+            exit(0);
+          }
+          if (dup2(infd, 0) == -1) {
+            perror("dup2 infile");
+            exit(0);
+          }
+        }
+
+
         // try to run it as is
-        execv(cmd->args[0][0], cmd->args[0]);
+        execv(cmd->args[0], cmd->args);
         // search the path
         stringstream searchpath;
         for (auto it: path) {
           searchpath.str("");
-          searchpath << it << "/" << cmd->args[0][0];
-          execv(searchpath.str().c_str(), cmd->args[0]);
+          searchpath << it << "/" << cmd->args[0];
+          execv(searchpath.str().c_str(), cmd->args);
         }
         // nothing found here...
         printf("that's not a command, bish\n");
