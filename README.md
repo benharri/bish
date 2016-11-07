@@ -17,15 +17,15 @@ The Shell Assignment (total 42 points)
     + `/bin/ls`
 + 1 ~~You search the path for the executable~~
     + `ls`
-+ 1 Can do file input redirection "<"
++ 1 ~~Can do file input redirection "<"~~
     + `ls > fred`
-+ 1 Can do file output redirection ">"
++ 1 ~~Can do file output redirection ">"~~
     + `ls < fred`
 + 2 Can do command piping "|"
     + `ls | wc`
 + 1 Can do lots of pipes
     + `ls | grep fred | wc`
-+ 1 Can do at least one combination of these things
++ 1 ~~Can do at least one combination of these things~~
     + `ls | wc > fred`
 + 4 Can do any combination of three of <, >, and | 
     + `cat < filename | sort > sortedFile.txt`
@@ -63,8 +63,8 @@ The Shell Assignment (total 42 points)
     + (shell) Did you mean `ls`?
 + 2 Can run commands from a file
     + `. scriptFile.txt`
-+ 2 ~~Tab Completion~~ and Arrow History
-+ 1 Saves and reloads history to a file
++ 2 ~~Tab Completion~~ and ~~Arrow History~~
++ 1 ~~Saves and reloads history to a file~~
 + 2 Automatically runs a file called .myshell when it starts
 + 2 Only runs execuatables from an approved list
 + -2  Commands cannot have arguments (i.e. ls -l does not work).
@@ -73,7 +73,7 @@ The Shell Assignment (total 42 points)
 
 Some cases to consider
 + A person tries to run a non-executable.
-+ A person tries to read or write to a non-existant file.
++ A person tries to read or write to a non-existent file.
 + A person tries to read or write to a file they do not have permissions on.
 + A person tries a non-sensical command. (i.e. `ls > foo > fee < doo < dee`)
 + A person tries to pipe to a non-command (i.e. `ls | /tmp/foo.txt`)

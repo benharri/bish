@@ -4,18 +4,14 @@
 // *************************
 
 #include <iostream>
-#include <cstdlib>
 #include <string>
-#include <string.h>
 #include <unistd.h>
 #include <vector>
 #include <sys/wait.h>
 #include <sys/types.h>
-// #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sstream>
-#include <stdio.h>
 #include <pwd.h>
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -42,7 +38,7 @@ int main(int argc, char **argv){
   using_history();
   string histpath = string(homedir) + string("/.bish_history");
   if (read_history(histpath.c_str())) {
-    printf("history file not found. creating `~/.bish_history`.\n");
+    cout << "history file not found. creating `~/.bish_history`." << endl;
     int hist = open(histpath.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IRGRP | S_IROTH);
     close(hist);
   }
@@ -129,7 +125,7 @@ int main(int argc, char **argv){
           execv(searchpath.str().c_str(), cmd->args);
         }
         // nothing found here...
-        printf("that's not a command, bish\n");
+        cout << "that's not a command, bish" << endl;
         exit(1);
 
       }
@@ -145,13 +141,13 @@ int main(int argc, char **argv){
             exit(1);
           }
           if (WIFEXITED(status)) {
-            printf("(%d):", WEXITSTATUS(status));
+            cout << "(" << WEXITSTATUS(status) << "):";
           } else if (WIFSIGNALED(status)) {
-            printf("\nkilled by signal %d\n", WTERMSIG(status));
+            cout << endl << "killed by signal " << WTERMSIG(status) << endl;
           } else if (WIFSTOPPED(status)) {
-            printf("\nstopped by signal %d\n", WSTOPSIG(status));
+            cout << endl << "stopped by signal " << WSTOPSIG(status) << endl;
           } else if (WIFCONTINUED(status)) {
-            printf("\ncontinued\n");
+            cout << endl << "continued" << endl;
           }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
@@ -160,12 +156,11 @@ int main(int argc, char **argv){
     }
 
     // reset args array for the next prompt
-    // delete[] args;
     delete cmd;
 
   }
 
-  printf("\n");
+  cout << endl;
   if (write_history(histpath.c_str())) perror("write_history");
 
   return 0;
