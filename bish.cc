@@ -21,9 +21,7 @@ using namespace std;
 
 int main(int argc, char **argv){
 
-  struct sigaction act;
-  act.sa_handler = ctrlCHandler;
-  sigaction(SIGINT, &act, NULL);
+  signal(SIGINT, ctrlCHandler);
 
   stringstream prompt;
   static char* line = (char*)NULL;
@@ -134,22 +132,23 @@ int main(int argc, char **argv){
 
         int status;
 
-        if (!cmd->background)
-        do {
-          if (waitpid(kidpid, &status, WUNTRACED | WCONTINUED) == -1) {
-            perror("waitpid");
-            exit(1);
-          }
-          if (WIFEXITED(status)) {
-            cout << "(" << WEXITSTATUS(status) << "):";
-          } else if (WIFSIGNALED(status)) {
-            cout << endl << "killed by signal " << WTERMSIG(status) << endl;
-          } else if (WIFSTOPPED(status)) {
-            cout << endl << "stopped by signal " << WSTOPSIG(status) << endl;
-          } else if (WIFCONTINUED(status)) {
-            cout << endl << "continued" << endl;
-          }
-        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        if (!cmd->background){
+          do {
+            if (waitpid(kidpid, &status, WUNTRACED | WCONTINUED) == -1) {
+              perror("waitpid");
+              exit(1);
+            }
+            if (WIFEXITED(status)) {
+              cout << "(" << WEXITSTATUS(status) << "):";
+            } else if (WIFSIGNALED(status)) {
+              cout << endl << "killed by signal " << WTERMSIG(status) << endl;
+            } else if (WIFSTOPPED(status)) {
+              cout << endl << "stopped by signal " << WSTOPSIG(status) << endl;
+            } else if (WIFCONTINUED(status)) {
+              cout << endl << "continued" << endl;
+            }
+          } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        }
 
       }
 

@@ -2,13 +2,19 @@
 
 #include <vector>
 #include <string>
+#include <signal.h>
+#include <iostream>
 #include <string.h>
 // #include "util_fns.h"
 using namespace std;
 
 
 void ctrlCHandler(int sig) {
-
+  if (sig == SIGINT) {
+    // cout << "SIGINT received" << endl;
+    // return;
+    cout << endl;
+  }
 }
 
 // util methods
