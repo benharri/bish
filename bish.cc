@@ -159,11 +159,9 @@ int main(int argc, char **argv){
       else {
 
         int status;
-        pid_t w;
 
         do {
-          w = waitpid(kidpid, &status, WUNTRACED | WCONTINUED);
-          if (w == -1) {
+          if (waitpid(kidpid, &status, WUNTRACED | WCONTINUED) == -1) {
             perror("waitpid");
             exit(1);
           }
