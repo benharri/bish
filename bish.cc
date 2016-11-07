@@ -1,3 +1,8 @@
+// *************************
+// Ben's Implemented SHell
+//         bish
+// *************************
+
 #include <iostream>
 #include <cstdlib>
 #include <string>
@@ -52,7 +57,7 @@ int main(int argc, char **argv){
     // char **args = v_to_cpp(split(line));
     command *cmd = parse(split(line));
     print_cmd(cmd);
-    continue;
+    // continue;
 
     free(line);
     line = (char*)NULL;
