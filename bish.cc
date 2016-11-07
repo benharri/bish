@@ -14,83 +14,9 @@
 #include <pwd.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include "parse.h"
+#include "util_fns.h"
 using namespace std;
-
-// util methods
-vector<string> split(const char *str, char c = ' ') {
-  vector<string> result;
-  do {
-    const char *begin = str;
-    while (*str != c && *str) str++;
-    result.push_back(string(begin, str));
-  } while (0 != *str++);
-  return result;
-}
-
-char** v_to_cpp(vector<string> vargs) {
-  char** args = new char *[vargs.size()+1];
-  // http://stackoverflow.com/questions/26032039/convert-vectorstring-into-char-c
-  for (size_t i = 0; i < vargs.size(); ++i) {
-    args[i] = new char[vargs[i].size() + 1];
-    strcpy(args[i], vargs[i].c_str());
-  }
-  args[vargs.size()] = nullptr;
-  return args;
-}
-
-// command struct
-struct command {
-  char*** args;
-  bool background;
-  string piping;
-  string infile;
-  string outfile;
-};
-
-command parse(vector<string> args) {
-  command parseinfo;
-  bool in_flag = false, out_flag = false, piping_flag = false;
-  vector<string> cmd;
-
-  for (auto it: args) {
-    if (it == "<") {
-      in_flag = true;
-      continue;
-    }
-    else if (in_flag) {
-      in_flag = false;
-      parseinfo.infile = it;
-    }
-
-    else if (it == ">") {
-      out_flag = true;
-      continue;
-    }
-    else if (out_flag) {
-      out_flag = false;
-      parseinfo.outfile = it;
-    }
-
-    else if (it == "|") {
-      piping_flag = true;
-      continue;
-    }
-    else if (piping_flag) {
-      piping_flag = false;
-      parseinfo.piping = it;
-    }
-
-    else if (it == args.back() && it == "&") {
-      parseinfo.background = true;
-    }
-
-    else cmd.push_back(it);
-  }
-  parseinfo.args[0] = v_to_cpp(cmd);
-  return parseinfo;
-}
-
-
 
 int main(int argc, char **argv){
 
@@ -112,6 +38,7 @@ int main(int argc, char **argv){
     close(hist);
   }
 
+
   while ("bish") {
 
     prompt.str("");
@@ -122,21 +49,23 @@ int main(int argc, char **argv){
     if (strcmp(line, "") == 0) continue;
     if (line && *line) add_history (line);
 
-    char **args = v_to_cpp(split(line));
-    command cmd = parse(split(line));
+    // char **args = v_to_cpp(split(line));
+    command *cmd = parse(split(line));
+    print_cmd(cmd);
+    continue;
 
     free(line);
     line = (char*)NULL;
 
     // http://www.linuxquestions.org/questions/programming-9/making-a-c-shell-775690/
-    if (strcmp(args[0], "exit") == 0) break;
+    if (strcmp(cmd->args[0][0], "exit") == 0) break;
     // handle chdir
-    else if (strcmp(args[0], "cd") == 0) {
-      if (args[1] == NULL) {
+    else if (strcmp(cmd->args[0][0], "cd") == 0) {
+      if (cmd->args[0][1] == NULL) {
         if (chdir(homedir) < 0) perror("chdir");
       }
       else {
-        if (chdir(args[1]) < 0) perror("chdir");
+        if (chdir(cmd->args[0][1]) < 0) perror("chdir");
       }
     }
 
@@ -153,13 +82,13 @@ int main(int argc, char **argv){
       // also check the path for things
       else if (kidpid == 0){
         // try to run it as is
-        execv(args[0], args);
+        execv(cmd->args[0][0], cmd->args[0]);
         // search the path
         stringstream searchpath;
         for (auto it: path) {
           searchpath.str("");
-          searchpath << it << "/" << args[0];
-          execv(searchpath.str().c_str(), args);
+          searchpath << it << "/" << cmd->args[0][0];
+          execv(searchpath.str().c_str(), cmd->args[0]);
         }
         // nothing found here...
         printf("that's not a command, bish\n");
@@ -192,7 +121,8 @@ int main(int argc, char **argv){
     }
 
     // reset args array for the next prompt
-    delete[] args;
+    // delete[] args;
+    delete cmd;
 
   }
 
