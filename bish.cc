@@ -57,8 +57,8 @@ int main(int argc, char **argv){
     // char **args = v_to_cpp(split(line));
     // parse line
     command *cmd = parse(split(line));
-    print_cmd(cmd);
-    cout << endl;
+    // print_cmd(cmd);
+    // cout << endl;
     // clear line var
     free(line);
     line = (char*)NULL;
