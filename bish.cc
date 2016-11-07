@@ -53,29 +53,38 @@ command parse(vector<string> args) {
   vector<string> cmd;
 
   for (auto it: args) {
-    if (it == "<") in_flag = true;
-    if (in_flag) {
+    if (it == "<") {
+      in_flag = true;
+      continue;
+    }
+    else if (in_flag) {
       in_flag = false;
       parseinfo.infile = it;
     }
 
-    if (it == ">") out_flag = true;
-    if (out_flag) {
+    else if (it == ">") {
+      out_flag = true;
+      continue;
+    }
+    else if (out_flag) {
       out_flag = false;
       parseinfo.outfile = it;
     }
 
-    if (it == "|") piping_flag = true;
-    if (piping_flag) {
+    else if (it == "|") {
+      piping_flag = true;
+      continue;
+    }
+    else if (piping_flag) {
       piping_flag = false;
       parseinfo.piping = it;
     }
 
-    if (it == args.back() && it == "&") {
+    else if (it == args.back() && it == "&") {
       parseinfo.background = true;
     }
 
-    cmd.push_back(it);
+    else cmd.push_back(it);
   }
   parseinfo.args[0] = v_to_cpp(cmd);
   return parseinfo;
@@ -114,6 +123,8 @@ int main(int argc, char **argv){
     if (line && *line) add_history (line);
 
     char **args = v_to_cpp(split(line));
+    command cmd = parse(split(line));
+
     free(line);
     line = (char*)NULL;
 
