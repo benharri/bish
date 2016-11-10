@@ -54,111 +54,131 @@ int main(int argc, char **argv){
 
     // char **args = v_to_cpp(split(line));
     // parse line
-    command *cmd = parse(split(line));
-    print_cmd(cmd);
-    // clear line var
-    free(line);
-    line = (char*)NULL;
+    vector<string> wfwe = split(line, ';');
+    for (auto it: wfwe) {
 
-    // http://www.linuxquestions.org/questions/programming-9/making-a-c-shell-775690/
-    if (strcmp(cmd->args[0], "exit") == 0) break;
 
-    // handle chdir
-    else if (strcmp(cmd->args[0], "cd") == 0) {
-      if (cmd->args[1] == NULL) {
-        if (chdir(homedir) < 0) perror("chdir");
-      }
-      else {
-        if (chdir(cmd->args[1]) < 0) perror("chdir");
-      }
-    }
+      command *cmd = parse(split(it.c_str()));
+      print_cmd(cmd);
+      // clear line var
+      free(line);
+      line = (char*)NULL;
 
-    // process the line.
-    else {
-
-      pid_t kidpid = fork();
-      // fork error
-      if (kidpid < 0) {
-        perror("fork");
-        return -1;
+      // COMMANDS that do something with the line before fork/exec
+      if (strcmp(cmd->args[0], "!") == 0) {
+        line = history_get(where_history())->line;
+        cmd = parse(split(line));
       }
 
-      // run it
-      // also check the path for things
-      else if (kidpid == 0){
-
-        // io redirection
-        if (cmd->outfile != "") {
-          int outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
-          if (outfd < 0) {
-            perror("outfile");
-            exit(0);
-          }
-          if (dup2(outfd, 1) == -1) {
-            perror("dup2 outfile");
-            exit(0);
-          }
+      else if (strcmp(cmd->args[0], ".") == 0 || strcmp(cmd->args[0], "source") == 0) {
+        int dotsrcfile = open(cmd->args[1], O_RDONLY);
+        if (dotsrcfile < 0) {
+          perror("dotsrcfile");
+          continue;
         }
-
-        if (cmd->infile != "") {
-          int infd = open(cmd->infile.c_str(), O_RDONLY);
-          if (infd < 0) {
-            perror("infile");
-            exit(0);
-          }
-          if (dup2(infd, 0) == -1) {
-            perror("dup2 infile");
-            exit(0);
-          }
-        }
-
-
-        // try to run it as is
-        execv(cmd->args[0], cmd->args);
-        // search the path
-        stringstream searchpath;
-        for (auto it: path) {
-          searchpath.str("");
-          searchpath << it << "/" << cmd->args[0];
-          execv(searchpath.str().c_str(), cmd->args);
-        }
-        // nothing found here...
-        cout << "that's not a command, bish" << endl;
-        exit(1);
-
+        // do the thing to read the files
       }
-      // parent waits for kid to die
+
+      // COMMANDS that skip fork/exec
+      // http://www.linuxquestions.org/questions/programming-9/making-a-c-shell-775690/
+      if (strcmp(cmd->args[0], "exit") == 0) break;
+
+      // handle chdir
+      else if (strcmp(cmd->args[0], "cd") == 0) {
+        if (cmd->args[1] == NULL) {
+          if (chdir(homedir) < 0) perror("chdir");
+        }
+        else {
+          if (chdir(cmd->args[1]) < 0) perror("chdir");
+        }
+      }
+
+      // process the line.
       else {
 
-        int status;
+        pid_t kidpid = fork();
+        // fork error
+        if (kidpid < 0) {
+          perror("fork");
+          return -1;
+        }
 
-        if (!cmd->background){
-          do {
-            if (waitpid(kidpid, &status, WUNTRACED | WCONTINUED) == -1) {
-              perror("waitpid");
-              exit(1);
+        // run it
+        // also check the path for things
+        else if (kidpid == 0){
+
+          // io redirection
+          if (cmd->outfile != "") {
+            int outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
+            if (outfd < 0) {
+              perror("outfile");
+              exit(0);
             }
-            if (WIFEXITED(status)) {
-              cout << "(" << WEXITSTATUS(status) << "):";
-            } else if (WIFSIGNALED(status)) {
-              cout << endl << "killed by signal " << WTERMSIG(status) << endl;
-            } else if (WIFSTOPPED(status)) {
-              cout << endl << "stopped by signal " << WSTOPSIG(status) << endl;
-            } else if (WIFCONTINUED(status)) {
-              cout << endl << "continued" << endl;
+            if (dup2(outfd, 1) == -1) {
+              perror("dup2 outfile");
+              exit(0);
             }
-          } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+          }
+
+          if (cmd->infile != "") {
+            int infd = open(cmd->infile.c_str(), O_RDONLY);
+            if (infd < 0) {
+              perror("infile");
+              exit(0);
+            }
+            if (dup2(infd, 0) == -1) {
+              perror("dup2 infile");
+              exit(0);
+            }
+          }
+
+
+          // try to run it as is
+          execv(cmd->args[0], cmd->args);
+          // search the path
+          stringstream searchpath;
+          for (auto it: path) {
+            searchpath.str("");
+            searchpath << it << "/" << cmd->args[0];
+            execv(searchpath.str().c_str(), cmd->args);
+          }
+          // nothing found here...
+          cout << "that's not a command, bish" << endl;
+          exit(1);
+
+        }
+        // parent waits for kid to die
+        else {
+
+          int status;
+
+          if (!cmd->background){
+            do {
+              if (waitpid(kidpid, &status, WUNTRACED | WCONTINUED) == -1) {
+                perror("waitpid");
+                exit(1);
+              }
+              if (WIFEXITED(status)) {
+                cout << "(" << WEXITSTATUS(status) << "):";
+              } else if (WIFSIGNALED(status)) {
+                cout << endl << "killed by signal " << WTERMSIG(status) << endl;
+              } else if (WIFSTOPPED(status)) {
+                cout << endl << "stopped by signal " << WSTOPSIG(status) << endl;
+              } else if (WIFCONTINUED(status)) {
+                cout << endl << "continued" << endl;
+              }
+            } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+          }
+
         }
 
       }
 
+      // reset args array for the next prompt
+      delete cmd;
+
     }
-
-    // reset args array for the next prompt
-    delete cmd;
-
   }
-
   cout << endl;
   if (write_history(histpath.c_str())) perror("write_history");
 

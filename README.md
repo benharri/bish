@@ -37,13 +37,13 @@ The Shell Assignment (total 42 points)
     + `ls a*b`
 + 1 ~~Knows how to change directory~~
     + `cd /fred`
-+ 1 Bang last command
++ 1 ~~Bang last command~~
     + `!l` runs ls
 + 1 Bang # command
     + `!4` runs 4th command from history
-+ 1 Queue commands
++ 1 ~~Queue commands~~
     + `make ; make install`
-+ 1 Can have lots of semicolons
++ 1 ~~Can have lots of semicolons~~
     + `ls; sleep 3; rm fred`
 + 2 Change Prompt
     + `PS1="what is you command?"`
@@ -69,7 +69,8 @@ The Shell Assignment (total 42 points)
 + 2 Only runs execuatables from an approved list
 + -2  Commands cannot have arguments (i.e. ls -l does not work).
     
-
+13 pts
+/20
 
 Some cases to consider
 + A person tries to run a non-executable.

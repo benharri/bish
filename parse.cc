@@ -10,14 +10,10 @@ using namespace std;
 
 
 void print_cmd(command *cmd) {
-  // cout << "args: " << endl;
-
   if (cmd->background) cout << "backgroud: true" << endl;
-
   if (cmd->piping != "") cout << "piping to: " << cmd->piping << endl;
   if (cmd->infile != "") cout << "infile: " << cmd->infile << endl;
   if (cmd->outfile != "") cout << "outfile: " << cmd->outfile << endl;
-  cout << endl;
 }
 
 

@@ -5,16 +5,13 @@
 #include <signal.h>
 #include <iostream>
 #include <string.h>
+#include <unistd.h>
 // #include "util_fns.h"
 using namespace std;
 
 
 void ctrlCHandler(int sig) {
-  if (sig == SIGINT) {
-    // cout << "SIGINT received" << endl;
-    // return;
-    cout << endl;
-  }
+  cout << endl << "\e[34mbish:\e[92m" << get_current_dir_name() << "\e[34m:$\e[0m ";
 }
 
 // util methods
@@ -23,7 +20,8 @@ vector<string> split(const char *str, char c) {
   do {
     const char *begin = str;
     while (*str != c && *str) str++;
-    result.push_back(string(begin, str));
+    string tmp = string(begin, str);
+    if (tmp != "") result.push_back(tmp);
   } while (0 != *str++);
   return result;
 }
@@ -38,3 +36,5 @@ char** v_to_cpp(vector<string> vargs) {
   args[vargs.size()] = NULL;
   return args;
 }
+
+
