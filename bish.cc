@@ -59,7 +59,7 @@ int main(int argc, char **argv){
 
 
       command *cmd = parse(split(it.c_str()));
-      print_cmd(cmd);
+      // print_cmd(cmd);
       // clear line var
       free(line);
       line = (char*)NULL;
