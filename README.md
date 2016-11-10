@@ -52,7 +52,7 @@ The Shell Assignment (total 42 points)
 + 1 Concatenate commands with &.  Only runs next command if the previous 
       comand returned success.
     + `cd /home/rappleto & rm fred.txt`
-+ 1 Catch Keyboard interrupt
++ 1 ~~Catch Keyboard interrupt~~
     + `ctrl + c` = back to prompt
 + 1 Replace "~" with the home directory
     + `rm ~/junkfile`
@@ -69,7 +69,7 @@ The Shell Assignment (total 42 points)
 + 2 Only runs execuatables from an approved list
 + -2  Commands cannot have arguments (i.e. ls -l does not work).
     
-13 pts
+14 pts
 /20
 
 Some cases to consider

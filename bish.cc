@@ -57,7 +57,6 @@ int main(int argc, char **argv){
     vector<string> wfwe = split(line, ';');
     for (auto it: wfwe) {
 
-
       command *cmd = parse(split(it.c_str()));
       // print_cmd(cmd);
       // clear line var
@@ -67,6 +66,7 @@ int main(int argc, char **argv){
       // COMMANDS that do something with the line before fork/exec
       if (strcmp(cmd->args[0], "!") == 0) {
         line = history_get(where_history())->line;
+        cout << line << endl;
         cmd = parse(split(line));
       }
 
@@ -132,7 +132,6 @@ int main(int argc, char **argv){
             }
           }
 
-
           // try to run it as is
           execv(cmd->args[0], cmd->args);
           // search the path
@@ -146,7 +145,7 @@ int main(int argc, char **argv){
           cout << "that's not a command, bish" << endl;
           exit(1);
 
-        }
+        } // end child
         // parent waits for kid to die
         else {
 
@@ -170,15 +169,15 @@ int main(int argc, char **argv){
             } while (!WIFEXITED(status) && !WIFSIGNALED(status));
           }
 
-        }
+        } // end parent
 
-      }
+      } // end execute area
 
       // reset args array for the next prompt
       delete cmd;
 
-    }
-  }
+    } // end ';' split
+  } // end main while loop
   cout << endl;
   if (write_history(histpath.c_str())) perror("write_history");
 
