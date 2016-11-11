@@ -11,17 +11,19 @@ using namespace std;
 
 void print_cmd(command *cmd) {
   if (cmd->background) cout << "backgroud: true" << endl;
-  if (cmd->piping != "") cout << "piping to: " << cmd->piping << endl;
-  if (cmd->infile != "") cout << "infile: " << cmd->infile << endl;
-  if (cmd->outfile != "") cout << "outfile: " << cmd->outfile << endl;
+  if (cmd->piping) cout << "piping to: " << cmd->piping << endl;
+  if (cmd->cmds[0]->infile != "") cout << "infile: " << cmd->cmds[0]->infile << endl;
+  if (cmd->cmds[0]->outfile != "") cout << "outfile: " << cmd->cmds[0]->outfile << endl;
 }
 
 
 
 command *parse(vector<string> args) {
+
   command *parseinfo = new command();
-  bool in_flag = false, out_flag = false, piping_flag = false;
-  vector<string> cmd;
+  bool in_flag = false, out_flag = false;//, piping_flag = false;
+  vector<vector<string>> cmd;
+  int num_cmds = 0;
 
   for (auto it: args) {
     if (it == "<") {
@@ -30,7 +32,7 @@ command *parse(vector<string> args) {
     }
     else if (in_flag) {
       in_flag = false;
-      parseinfo->infile = it;
+      parseinfo->cmds[num_cmds]->infile = it;
     }
 
     else if (it == ">") {
@@ -39,24 +41,34 @@ command *parse(vector<string> args) {
     }
     else if (out_flag) {
       out_flag = false;
-      parseinfo->outfile = it;
+      parseinfo->cmds[num_cmds]->outfile = it;
     }
 
     else if (it == "|") {
-      piping_flag = true;
+      // piping_flag = true;
+      // cmd.push_back();
+      num_cmds++;
       continue;
     }
-    else if (piping_flag) {
-      piping_flag = false;
-      parseinfo->piping = it;
-    }
+    // else if (piping_flag) {
+    //   // piping_flag = false;
+    //   parseinfo->piping = true;
+    // }
 
     else if (it == args.back() && it == "&") {
       parseinfo->background = true;
     }
 
-    else cmd.push_back(it);
+    else {
+      cmd[num_cmds].push_back(it);
+    }
   }
-  parseinfo->args = v_to_cpp(cmd);
+
+  int i = 0;
+  for (auto it: cmd) {
+    parseinfo->cmds[i]->args = v_to_cpp(cmd[0]);
+
+  }
+  parseinfo->num_cmds = num_cmds;
   return parseinfo;
 }

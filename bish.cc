@@ -64,14 +64,14 @@ int main(int argc, char **argv){
       line = (char*)NULL;
 
       // COMMANDS that do something with the line before fork/exec
-      if (strcmp(cmd->args[0], "!") == 0) {
+      if (strcmp(cmd->cmds[0]->args[0], "!") == 0) {
         line = history_get(where_history())->line;
         cout << line << endl;
         cmd = parse(split(line));
       }
 
-      else if (strcmp(cmd->args[0], ".") == 0 || strcmp(cmd->args[0], "source") == 0) {
-        int dotsrcfile = open(cmd->args[1], O_RDONLY);
+      else if (strcmp(cmd->cmds[0]->args[0], ".") == 0 || strcmp(cmd->cmds[0]->args[0], "source") == 0) {
+        int dotsrcfile = open(cmd->cmds[0]->args[1], O_RDONLY);
         if (dotsrcfile < 0) {
           perror("dotsrcfile");
           continue;
@@ -81,15 +81,15 @@ int main(int argc, char **argv){
 
       // COMMANDS that skip fork/exec
       // http://www.linuxquestions.org/questions/programming-9/making-a-c-shell-775690/
-      if (strcmp(cmd->args[0], "exit") == 0) break;
+      if (strcmp(cmd->cmds[0]->args[0], "exit") == 0) break;
 
       // handle chdir
-      else if (strcmp(cmd->args[0], "cd") == 0) {
-        if (cmd->args[1] == NULL) {
+      else if (strcmp(cmd->cmds[0]->args[0], "cd") == 0) {
+        if (cmd->cmds[0]->args[1] == NULL) {
           if (chdir(homedir) < 0) perror("chdir");
         }
         else {
-          if (chdir(cmd->args[1]) < 0) perror("chdir");
+          if (chdir(cmd->cmds[0]->args[1]) < 0) perror("chdir");
         }
       }
 
@@ -106,43 +106,25 @@ int main(int argc, char **argv){
         // run it
         // also check the path for things
         else if (kidpid == 0){
+          int infd = 0, outfd = 1;
 
           // io redirection
-          if (cmd->outfile != "") {
-            int outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
+          if (cmd->cmds[0]->outfile != "") {
+            outfd = open(cmd->cmds[0]->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
             if (outfd < 0) {
               perror("outfile");
               exit(0);
             }
-            if (dup2(outfd, 1) == -1) {
-              perror("dup2 outfile");
-              exit(0);
-            }
           }
-
-          if (cmd->infile != "") {
-            int infd = open(cmd->infile.c_str(), O_RDONLY);
+          if (cmd->cmds[0]->infile != "") {
+            infd = open(cmd->cmds[0]->infile.c_str(), O_RDONLY);
             if (infd < 0) {
               perror("infile");
               exit(0);
             }
-            if (dup2(infd, 0) == -1) {
-              perror("dup2 infile");
-              exit(0);
-            }
           }
 
-          // try to run it as is
-          execv(cmd->args[0], cmd->args);
-          // search the path
-          stringstream searchpath;
-          for (auto it: path) {
-            searchpath.str("");
-            searchpath << it << "/" << cmd->args[0];
-            execv(searchpath.str().c_str(), cmd->args);
-          }
-          // nothing found here...
-          cout << "that's not a command, bish" << endl;
+          bishexec(cmd, infd, outfd);
           exit(1);
 
         } // end child

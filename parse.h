@@ -7,13 +7,18 @@
 #include <vector>
 using namespace std;
 
-// command struct
-struct command {
+// simple_command struct
+struct simple_command {
   char** args;
-  bool background;
-  string piping;
   string infile;
   string outfile;
+};
+// command struct
+struct command {
+  simple_command** cmds;
+  int num_cmds;
+  bool background;
+  bool piping;
 };
 
 // method definitions
