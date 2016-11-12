@@ -12,6 +12,6 @@ using namespace std;
 void ctrlCHandler(int sig);
 vector<string> split(const char *str, char c = ' ');
 char** v_to_cpp(vector<string> vargs);
-void bishexec(command* cmd, int infd, int outfd);
+void bishexec(simple_command* cmd, int infd, int outfd);
 
 #endif

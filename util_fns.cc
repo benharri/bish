@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sstream>
 #include "parse.h"
 #include "util_fns.h"
 using namespace std;
@@ -41,7 +42,8 @@ char** v_to_cpp(vector<string> vargs) {
 }
 
 
-void bishexec(command* cmd, int infd, int outfd) {
+void bishexec(simple_command* cmd, int infd, int outfd) {
+
   if (outfd != 1) {
     if (dup2(outfd, 1) == -1) {
       perror("dup2 outfile");
@@ -56,13 +58,16 @@ void bishexec(command* cmd, int infd, int outfd) {
   }
 
   // try to run it as is
-  execvp(cmd->cmds[0]->args[0], cmd->cmds[0]->args);
+  execvp(cmd->vargs[0].c_str(), v_to_cpp(cmd->vargs));
+
   // search the path
-  // stringstream searchpath;
-  // for (auto it: path) {
-  //   searchpath.str("");
-  //   searchpath << it << "/" << cmd->args[0];
-  //   execv(searchpath.str().c_str(), cmd->args);
+  // vector<string> path = split(getenv("PATH"), ':');
+  // stringstream curr;
+
+  // for (auto iter: path) {
+  //   curr.str("");
+  //   curr << iter << "/" << cmd->vargs[0];
+  //   execv(curr.str().c_str(), v_to_cpp(cmd->vargs));
   // }
   // nothing found here...
   cout << "that's not a command, bish" << endl;

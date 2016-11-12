@@ -9,16 +9,15 @@ using namespace std;
 
 // simple_command struct
 struct simple_command {
-  char** args;
+  vector<string> vargs;
+  // char** args;
   string infile;
   string outfile;
 };
 // command struct
 struct command {
-  simple_command** cmds;
-  int num_cmds;
+  vector<simple_command> cmds;
   bool background;
-  bool piping;
 };
 
 // method definitions
