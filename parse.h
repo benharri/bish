@@ -10,7 +10,6 @@ using namespace std;
 // simple_command struct
 struct simple_command {
   vector<string> vargs;
-  // char** args;
   string infile;
   string outfile;
 };

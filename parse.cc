@@ -11,16 +11,20 @@ using namespace std;
 
 void print_cmd(command *cmd) {
   int i = 0;
+  cout << "-----------------------------" << endl;
   for (auto cmd_iter: cmd->cmds) {
     if (cmd->background) cout << "backgroud: true" << endl;
-    cout << "simple_command: " << i++ << endl;
+    cout << "command " << i++ << endl;
     cout << "infile: " << cmd_iter.infile << endl;
     cout << "outfile: " << cmd_iter.outfile << endl << endl;
+    cout << ">>\t";
     for (auto scmd_iter: cmd_iter.vargs) {
-      cout << scmd_iter << " ";
+      cout << "\"" << scmd_iter << "\" ";
     }
-    cout << endl;
+    cout << endl << endl;
   }
+  cout << "-----------------------------" << endl;
+
 }
 
 
