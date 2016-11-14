@@ -77,13 +77,14 @@ int main(int argc, char **argv){
                 }
             }
 
-            // int i;
+            // int n;
+            // bish_expandexec(&cmd->cmds[0]);
             int in = 0, fd[2];
             for (int i = 0; i < num_cmds-1; i++) {
                 pipe(fd);
-                dup_io(in, fd[1], true);
+                dup_io(in, fd[1]);
                 bish_expandexec(&cmd->cmds[i]);
-                close(fd[1]);
+                // close(fd[1]);
                 in = fd[0];
             }
             if (in != 0) {

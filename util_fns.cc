@@ -133,7 +133,7 @@ int expand_and_execute (const char *program, char **options) {
       }
   }
 
-  pid = fork ();
+  pid = fork();
   if (pid == 0) {
       /* This is the child process.  Execute the command. */
       execvp (result.we_wordv[0], result.we_wordv);
