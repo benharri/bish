@@ -21,11 +21,11 @@ The Shell Assignment (total 42 points)
     + `ls > fred`
 + 1 ~~Can do file output redirection ">"~~
     + `ls < fred`
-+ 2 Can do command piping "|"
++ 2 ~~Can do command piping "|"~~
     + `ls | wc`
-+ 1 Can do lots of pipes
++ 1 ~~Can do lots of pipes~~
     + `ls | grep fred | wc`
-+ 1 ~~Can do at least one combination of these things~~
++ 1 Can do at least one combination of these things
     + `ls | wc > fred`
 + 4 Can do any combination of three of <, >, and | 
     + `cat < filename | sort > sortedFile.txt`
