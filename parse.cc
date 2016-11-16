@@ -10,53 +10,65 @@ using namespace std;
 
 
 void print_cmd(command *cmd) {
-  if (cmd->background) cout << "backgroud: true" << endl;
-  if (cmd->piping != "") cout << "piping to: " << cmd->piping << endl;
-  if (cmd->infile != "") cout << "infile: " << cmd->infile << endl;
-  if (cmd->outfile != "") cout << "outfile: " << cmd->outfile << endl;
+  int i = 0;
+  cout << "-----------------------------" << endl;
+  for (auto cmd_iter: cmd->cmds) {
+    if (cmd->background) cout << "backgroud: true" << endl;
+    cout << "command " << ++i << endl;
+    if (cmd_iter.infile != "") cout << "infile: " << cmd_iter.infile << endl;
+    if (cmd_iter.outfile != "") cout << "outfile: " << cmd_iter.outfile << endl << endl;
+    cout << ">>\t";
+    for (auto scmd_iter: cmd_iter.vargs) {
+      cout << "\"" << scmd_iter << "\" ";
+    }
+    cout << endl << endl;
+  }
+  cout << "-----------------------------" << endl;
+
 }
 
 
 
 command *parse(vector<string> args) {
-  command *parseinfo = new command();
-  bool in_flag = false, out_flag = false, piping_flag = false;
-  vector<string> cmd;
 
-  for (auto it: args) {
-    if (it == "<") {
+  command *parsed_command = new command();
+  bool in_flag = false, out_flag = false;
+  simple_command *current_simple = new simple_command();
+
+  for (auto iter: args) {
+    if (iter == "<") {
       in_flag = true;
       continue;
     }
     else if (in_flag) {
       in_flag = false;
-      parseinfo->infile = it;
+      current_simple->infile = iter;
     }
 
-    else if (it == ">") {
+    else if (iter == ">") {
       out_flag = true;
       continue;
     }
     else if (out_flag) {
       out_flag = false;
-      parseinfo->outfile = it;
+      current_simple->outfile = iter;
     }
 
-    else if (it == "|") {
-      piping_flag = true;
+    else if (iter == "|") {
+      parsed_command->cmds.push_back(*current_simple);
+      delete current_simple;
+      current_simple = new simple_command();
       continue;
     }
-    else if (piping_flag) {
-      piping_flag = false;
-      parseinfo->piping = it;
+
+    else if (iter == args.back() && iter == "&") {
+      parsed_command->background = true;
     }
 
-    else if (it == args.back() && it == "&") {
-      parseinfo->background = true;
+    else {
+      current_simple->vargs.push_back(iter);
     }
-
-    else cmd.push_back(it);
   }
-  parseinfo->args = v_to_cpp(cmd);
-  return parseinfo;
+  parsed_command->cmds.push_back(*current_simple);
+  return parsed_command;
 }

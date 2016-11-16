@@ -21,23 +21,23 @@ The Shell Assignment (total 42 points)
     + `ls > fred`
 + 1 ~~Can do file output redirection ">"~~
     + `ls < fred`
-+ 2 Can do command piping "|"
++ 2 ~~Can do command piping "|"~~
     + `ls | wc`
-+ 1 Can do lots of pipes
++ 1 ~~Can do lots of pipes~~
     + `ls | grep fred | wc`
-+ 1 ~~Can do at least one combination of these things~~
++ 1 Can do at least one combination of these things
     + `ls | wc > fred`
 + 4 Can do any combination of three of <, >, and | 
     + `cat < filename | sort > sortedFile.txt`
 + 2 Can set enviornment variables
     + `PATH=:/bin:/sbin:/usr/sbin:/usr/bin`
-+ 2 Expands enviornment variables on the command line
++ 2 ~~Expands enviornment variables on the command line~~
     + `ls $HOME`
-+ 2 Does filename expansion "glob" (Hint:  Use the built in glob.)
++ 2 ~~Does filename expansion "glob" (Hint:  Use the built in glob.)~~
     + `ls a*b`
 + 1 ~~Knows how to change directory~~
     + `cd /fred`
-+ 1 ~~Bang last command~~
++ 1 Bang last command
     + `!l` runs ls
 + 1 Bang # command
     + `!4` runs 4th command from history
@@ -52,9 +52,9 @@ The Shell Assignment (total 42 points)
 + 1 Concatenate commands with &.  Only runs next command if the previous 
       comand returned success.
     + `cd /home/rappleto & rm fred.txt`
-+ 1 Catch Keyboard interrupt
++ 1 ~~Catch Keyboard interrupt~~
     + `ctrl + c` = back to prompt
-+ 1 Replace "~" with the home directory
++ 1 ~~Replace "~" with the home directory~~
     + `rm ~/junkfile`
 + 1 ~~Control-L clears the screen~~
     + `ctrl-l` = clear screen
@@ -69,7 +69,7 @@ The Shell Assignment (total 42 points)
 + 2 Only runs execuatables from an approved list
 + -2  Commands cannot have arguments (i.e. ls -l does not work).
     
-13 pts
+20 pts
 /20
 
 Some cases to consider
