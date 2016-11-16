@@ -53,7 +53,7 @@ void check_cmd_io(simple_command *cmd) {
     if (!remap_pipe_stdin_stdout(cmd->infd, cmd->outfd)) {
       // perror("dup2-remap_pipe_stdin_stdout");
     }
-    return;
+    // return;
   }
   // else {
     if (cmd->infile != "") {
@@ -133,10 +133,9 @@ int expand_and_execute (simple_command *cmd) {
   pid = fork();
   if (pid == 0) {
       /* This is the child process.  Execute the command. */
-      // int in = 0, out = 1;
       check_cmd_io(cmd);
-
       execvp (result.we_wordv[0], result.we_wordv);
+      cout << "that's not a command, bish" << endl;
       exit (EXIT_FAILURE);
   }
   else if (pid < 0)

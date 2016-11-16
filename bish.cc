@@ -70,6 +70,13 @@ int main(int argc, char **argv){
                 break;
             }
 
+            // COMMANDS that do something with the line before fork/exec
+            if (cmd->cmds[0].vargs[0] == "!") {
+                line = history_get(where_history())->line;
+                cout << line << endl;
+                cmd = parse(split(line));
+            }
+
             if (num_cmds > 1) {
 
                 int in = 0, fd[2];
@@ -95,12 +102,6 @@ int main(int argc, char **argv){
             }
 
 
-            // COMMANDS that do something with the line before fork/exec
-            // if (strcmp(cmd->cmds[0]->args[0], "!") == 0) {
-            //   line = history_get(where_history())->line;
-            //   cout << line << endl;
-            //   cmd = parse(split(line));
-            // }
 
             // else if (strcmp(cmd->cmds[0]->args[0], ".") == 0 || strcmp(cmd->cmds[0]->args[0], "source") == 0) {
             //   int dotsrcfile = open(cmd->cmds[0]->args[1], O_RDONLY);

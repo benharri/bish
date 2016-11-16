@@ -25,9 +25,9 @@ The Shell Assignment (total 42 points)
     + `ls | wc`
 + 1 ~~Can do lots of pipes~~
     + `ls | grep fred | wc`
-+ 1 Can do at least one combination of these things
++ 1 ~~Can do at least one combination of these things~~
     + `ls | wc > fred`
-+ 4 Can do any combination of three of <, >, and | 
++ 4 ~~Can do any combination of three of <, >, and |~~
     + `cat < filename | sort > sortedFile.txt`
 + 2 Can set enviornment variables
     + `PATH=:/bin:/sbin:/usr/sbin:/usr/bin`
@@ -69,7 +69,7 @@ The Shell Assignment (total 42 points)
 + 2 Only runs execuatables from an approved list
 + -2  Commands cannot have arguments (i.e. ls -l does not work).
     
-20 pts
+25 pts
 /20
 
 Some cases to consider
