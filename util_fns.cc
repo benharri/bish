@@ -55,7 +55,7 @@ void check_cmd_io(simple_command *cmd) {
     }
     return;
   }
-  else {
+  // else {
     if (cmd->infile != "") {
       cmd->infd = open(cmd->infile.c_str(), O_RDONLY);
       if (cmd->infd < 0) {
@@ -81,10 +81,8 @@ void check_cmd_io(simple_command *cmd) {
       }
     }
     else cmd->outfd = 1;
-  }
+  // }
 }
-
-
 
 
 
