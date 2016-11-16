@@ -69,58 +69,24 @@ int main(int argc, char **argv){
                 done = 1;
                 break;
             }
-            if (cmd->cmds[0].vargs[0] == "cd") {
-                if (cmd->cmds[0].vargs[1] == "") {
-                    if (chdir(homedir) < 0) perror("chdir");
-                } else {
-                    if (chdir(cmd->cmds[0].vargs[1].c_str()) < 0) perror("chdir");
+
+            if (num_cmds > 1) {
+
+                int in = 0, fd[2];
+                for (int i = 0; i < num_cmds-1; i++) {
+                    if (!pipe(fd)) perror("pipe");
+                    dup_io(in, fd[1]);
+                    bish_expandexec(&cmd->cmds[i]);
+                    // close(fd[1]);
+                    in = fd[0];
+                }
+                if (in != 0) {
+                    dup_io(in, 1);
+                    bish_expandexec(&cmd->cmds[num_cmds-1]);
                 }
             }
+            else bish_expandexec(&cmd->cmds[0]);
 
-            // int n;
-            // bish_expandexec(&cmd->cmds[0]);
-            int in = 0, fd[2];
-            for (int i = 0; i < num_cmds-1; i++) {
-                pipe(fd);
-                dup_io(in, fd[1]);
-                bish_expandexec(&cmd->cmds[i]);
-                // close(fd[1]);
-                in = fd[0];
-            }
-            if (in != 0) {
-                dup_io(in, 1);
-                bish_expandexec(&cmd->cmds[num_cmds]);
-            }
-
-            //     // else { // do fork/exec
-            // pid_t kidpid = fork();
-            // // fork error
-            // if (kidpid < 0) {
-            //     perror("fork");
-            //     return -1;
-            // }
-
-            // // run it
-            // // also check the path for things
-            // else if (kidpid == 0){
-            //     int infd = 0, outfd = 1;
-
-            //     if (num_cmds > 1) {
-            //         int pipefd[2];
-            //         pipe(pipefd);
-            //         pid_t nextkidpid = fork();
-            //         if (nextkidpid < 0) {
-            //             perror("fork");
-            //             return -1;
-            //         }
-            //         else if (nextkidpid == 0) {
-            //             close(pipefd[0]);
-            //             outfd = pipefd[1];
-            //             bishexec(&curr, infd, outfd);
-            //         }
-            //     }
-
-            //     // io redirection
             //     if (curr.outfile != "") {
             //         outfd = open(curr.outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
             //         if (outfd < 0) {
@@ -135,35 +101,6 @@ int main(int argc, char **argv){
             //             exit(0);
             //         }
             //     }
-
-            //     bishexec(&curr, infd, outfd);
-            //     exit(1);
-
-            // } // end child
-            // // parent waits for kid to die
-            // else {
-
-            //     int status;
-
-            //     if (!cmd->background){
-            //         do {
-            //             if (waitpid(kidpid, &status, WUNTRACED | WCONTINUED) == -1) {
-            //                 perror("waitpid");
-            //                 exit(1);
-            //             }
-            //             if (WIFEXITED(status)) {
-            //                 cout << "(" << WEXITSTATUS(status) << "):";
-            //             } else if (WIFSIGNALED(status)) {
-            //                 cout << endl << "killed by signal " << WTERMSIG(status) << endl;
-            //             } else if (WIFSTOPPED(status)) {
-            //                 cout << endl << "stopped by signal " << WSTOPSIG(status) << endl;
-            //             } else if (WIFCONTINUED(status)) {
-            //                 cout << endl << "continued" << endl;
-            //             }
-            //         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-            //     }
-
-            // } // end parent
 
 
             // COMMANDS that do something with the line before fork/exec

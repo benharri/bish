@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <sstream>
 #include <wordexp.h>
+#include <fcntl.h>
+#include <pwd.h>
 #include <sys/wait.h>
 #include "parse.h"
 #include "util_fns.h"
@@ -79,6 +81,27 @@ void bishexec(simple_command* cmd, int infd, int outfd) {
   cout << "that's not a command, bish" << endl;
 }
 
+
+
+void check_cmd_io(simple_command *cmd, int *infd, int *outfd) {
+  if (cmd->infile != "") {
+    *infd = open(cmd->infile.c_str(), O_RDONLY);
+    if (infd < 0) {
+      perror("infile");
+      exit(0);
+    }
+  }
+  if (cmd->outfile != "") {
+    *outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
+    if (outfd < 0) {
+      perror("outfile");
+      exit(0);
+    }
+  }
+}
+
+
+
 void dup_io(int infd, int outfd, bool ispipe) {
   cout << "in: " << infd << "out: " << outfd << endl;
   if (ispipe) {
@@ -103,6 +126,8 @@ void dup_io(int infd, int outfd, bool ispipe) {
   }
 }
 
+
+
 int bish_expandexec(simple_command* cmd) {
   return expand_and_execute(cmd->vargs[0].c_str(), v_to_cpp(cmd->vargs));
 }
@@ -112,6 +137,7 @@ int expand_and_execute (const char *program, char **options) {
   wordexp_t result;
   pid_t pid;
   int status, i;
+
 
   /* Expand the string for the program to run.  */
   switch (wordexp (program, &result, 0)) {
@@ -126,12 +152,26 @@ int expand_and_execute (const char *program, char **options) {
   }
 
   /* Expand the strings specified for the arguments.  */
-  for (i = 0; options[i] != NULL; i++) {
+  for (i = 1; options[i] != NULL; i++) {
       if (wordexp (options[i], &result, WRDE_APPEND)) {
           wordfree (&result);
           return -1;
       }
   }
+
+  const char *homedir;
+  if ((homedir = getenv("HOME")) == NULL) {
+      homedir = getpwuid(getuid())->pw_dir;
+  }
+
+  if (strcmp(program, "cd") == 0) {
+    if (options[1]) {
+      if (chdir(result.we_wordv[1]) < 0) perror("chdir");
+    } else {
+      if (chdir(homedir) < 0) perror("chdir");
+    }
+  }
+  return 0;
 
   pid = fork();
   if (pid == 0) {
@@ -150,6 +190,10 @@ int expand_and_execute (const char *program, char **options) {
   wordfree (&result);
   return status;
 }
+
+
+
+
 
 
 

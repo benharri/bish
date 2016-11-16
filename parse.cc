@@ -14,9 +14,9 @@ void print_cmd(command *cmd) {
   cout << "-----------------------------" << endl;
   for (auto cmd_iter: cmd->cmds) {
     if (cmd->background) cout << "backgroud: true" << endl;
-    cout << "command " << i++ << endl;
-    cout << "infile: " << cmd_iter.infile << endl;
-    cout << "outfile: " << cmd_iter.outfile << endl << endl;
+    cout << "command " << ++i << endl;
+    if (cmd_iter.infile != "") cout << "infile: " << cmd_iter.infile << endl;
+    if (cmd_iter.outfile != "") cout << "outfile: " << cmd_iter.outfile << endl << endl;
     cout << ">>\t";
     for (auto scmd_iter: cmd_iter.vargs) {
       cout << "\"" << scmd_iter << "\" ";
