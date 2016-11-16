@@ -1,6 +1,6 @@
 COMPILER_FLAGS = -O3 -Wall -std=c++11 -ggdb
 LINKER_FLAGS = -lreadline
-
+EXECUTABLE_NAME = bish
 OBJS = \
 	bish.o \
 	parse.o \
@@ -10,7 +10,7 @@ all:
 	make bish
 
 bish: $(OBJS) Makefile
-	g++ $(OBJS) -o bish $(LINKER_FLAGS)
+	g++ $(OBJS) -o $(EXECUTABLE_NAME) $(LINKER_FLAGS)
 
 bish.o: bish.cc Makefile
 	g++ bish.cc -c -o bish.o $(COMPILER_FLAGS)
@@ -22,4 +22,4 @@ util_fns.o: util_fns.cc Makefile
 	g++ util_fns.cc -c -o util_fns.o $(COMPILER_FLAGS)
 
 clean:
-	$(RM) *.o bish; touch Makefile; make
+	$(RM) $(OBJS) $(EXECUTABLE_NAME); touch Makefile; make
