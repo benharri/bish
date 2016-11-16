@@ -31,13 +31,13 @@ The Shell Assignment (total 42 points)
     + `cat < filename | sort > sortedFile.txt`
 + 2 Can set enviornment variables
     + `PATH=:/bin:/sbin:/usr/sbin:/usr/bin`
-+ 2 Expands enviornment variables on the command line
++ 2 ~~Expands enviornment variables on the command line~~
     + `ls $HOME`
-+ 2 Does filename expansion "glob" (Hint:  Use the built in glob.)
++ 2 ~~Does filename expansion "glob" (Hint:  Use the built in glob.)~~
     + `ls a*b`
 + 1 ~~Knows how to change directory~~
     + `cd /fred`
-+ 1 ~~Bang last command~~
++ 1 Bang last command
     + `!l` runs ls
 + 1 Bang # command
     + `!4` runs 4th command from history
@@ -54,7 +54,7 @@ The Shell Assignment (total 42 points)
     + `cd /home/rappleto & rm fred.txt`
 + 1 ~~Catch Keyboard interrupt~~
     + `ctrl + c` = back to prompt
-+ 1 Replace "~" with the home directory
++ 1 ~~Replace "~" with the home directory~~
     + `rm ~/junkfile`
 + 1 ~~Control-L clears the screen~~
     + `ctrl-l` = clear screen

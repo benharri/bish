@@ -12,6 +12,8 @@ struct simple_command {
   vector<string> vargs;
   string infile;
   string outfile;
+  int infd;
+  int outfd;
 };
 // command struct
 struct command {

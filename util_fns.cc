@@ -83,21 +83,24 @@ void bishexec(simple_command* cmd, int infd, int outfd) {
 
 
 
-void check_cmd_io(simple_command *cmd, int *infd, int *outfd) {
+void check_cmd_io(simple_command *cmd) {
   if (cmd->infile != "") {
-    *infd = open(cmd->infile.c_str(), O_RDONLY);
-    if (infd < 0) {
+    cmd->infd = open(cmd->infile.c_str(), O_RDONLY);
+    if (cmd->infd < 0) {
       perror("infile");
-      exit(0);
+      return;
     }
   }
+  else cmd->infd = 0;
+
   if (cmd->outfile != "") {
-    *outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
-    if (outfd < 0) {
+    cmd->outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
+    if (cmd->outfd < 0) {
       perror("outfile");
-      exit(0);
+      return;
     }
   }
+  else cmd->outfd = 1;
 }
 
 
@@ -128,12 +131,10 @@ void dup_io(int infd, int outfd, bool ispipe) {
 
 
 
-int bish_expandexec(simple_command* cmd) {
-  return expand_and_execute(cmd->vargs[0].c_str(), v_to_cpp(cmd->vargs));
-}
-
 // http://www.gnu.org/software/libc/manual/html_node/Wordexp-Example.html
-int expand_and_execute (const char *program, char **options) {
+int expand_and_execute (simple_command *cmd) {
+  const char *program = cmd->vargs[0].c_str();
+  char **options = v_to_cpp(cmd->vargs);
   wordexp_t result;
   pid_t pid;
   int status, i;
@@ -170,12 +171,16 @@ int expand_and_execute (const char *program, char **options) {
     } else {
       if (chdir(homedir) < 0) perror("chdir");
     }
+    return 0;
   }
-  return 0;
 
   pid = fork();
   if (pid == 0) {
       /* This is the child process.  Execute the command. */
+      // int in = 0, out = 1;
+      check_cmd_io(cmd);
+      dup_io(cmd->infd, cmd->outfd);
+
       execvp (result.we_wordv[0], result.we_wordv);
       exit (EXIT_FAILURE);
   }

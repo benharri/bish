@@ -75,32 +75,23 @@ int main(int argc, char **argv){
                 int in = 0, fd[2];
                 for (int i = 0; i < num_cmds-1; i++) {
                     if (!pipe(fd)) perror("pipe");
-                    dup_io(in, fd[1]);
-                    bish_expandexec(&cmd->cmds[i]);
-                    // close(fd[1]);
+                    // dup_io(in, fd[1]);
+                    cmd->cmds[i].infd = in;
+                    cmd->cmds[i].outfd = fd[1];
+                    expand_and_execute(&cmd->cmds[i]);
+                    close(fd[1]);
                     in = fd[0];
                 }
                 if (in != 0) {
-                    dup_io(in, 1);
-                    bish_expandexec(&cmd->cmds[num_cmds-1]);
+                    // dup_io(in, 1);
+                    cmd->cmds[num_cmds-1].infd = in;
+                    cmd->cmds[num_cmds-1].outfd = 1;
+                    expand_and_execute(&cmd->cmds[num_cmds-1]);
                 }
             }
-            else bish_expandexec(&cmd->cmds[0]);
-
-            //     if (curr.outfile != "") {
-            //         outfd = open(curr.outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
-            //         if (outfd < 0) {
-            //             perror("outfile");
-            //             exit(0);
-            //         }
-            //     }
-            //     if (curr.infile != "") {
-            //         infd = open(curr.infile.c_str(), O_RDONLY);
-            //         if (infd < 0) {
-            //             perror("infile");
-            //             exit(0);
-            //         }
-            //     }
+            else {
+                expand_and_execute(&cmd->cmds[0]);
+            }
 
 
             // COMMANDS that do something with the line before fork/exec
