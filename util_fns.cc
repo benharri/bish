@@ -46,88 +46,46 @@ char** v_to_cpp(vector<string> vargs) {
 }
 
 
-void bishexec(simple_command* cmd, int infd, int outfd) {
-
-  // if (!remap_pipe_stdin_stdout(infd, outfd)) {
-  //   perror("dup2");
-  //   // return;
-  // }
-  if (outfd != 1) {
-    if (dup2(outfd, 1) == -1) {
-      perror("dup2 outfile");
-      exit(0);
-    }
-  }
-  if (infd != 0) {
-    if (dup2(infd, 0) == -1) {
-      perror("dup2 infile");
-      exit(0);
-    }
-  }
-
-  // try to run it as is
-  execvp(cmd->vargs[0].c_str(), v_to_cpp(cmd->vargs));
-
-  // search the path
-  // vector<string> path = split(getenv("PATH"), ':');
-  // stringstream curr;
-
-  // for (auto iter: path) {
-  //   curr.str("");
-  //   curr << iter << "/" << cmd->vargs[0];
-  //   execv(curr.str().c_str(), v_to_cpp(cmd->vargs));
-  // }
-  // nothing found here...
-  cout << "that's not a command, bish" << endl;
-}
-
 
 
 void check_cmd_io(simple_command *cmd) {
-  if (cmd->infile != "") {
-    cmd->infd = open(cmd->infile.c_str(), O_RDONLY);
-    if (cmd->infd < 0) {
-      perror("infile");
-      return;
+  if (cmd->ispipe) {
+    if (!remap_pipe_stdin_stdout(cmd->infd, cmd->outfd)) {
+      // perror("dup2-remap_pipe_stdin_stdout");
     }
-  }
-  else cmd->infd = 0;
-
-  if (cmd->outfile != "") {
-    cmd->outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
-    if (cmd->outfd < 0) {
-      perror("outfile");
-      return;
-    }
-  }
-  else cmd->outfd = 1;
-}
-
-
-
-void dup_io(int infd, int outfd, bool ispipe) {
-  cout << "in: " << infd << "out: " << outfd << endl;
-  if (ispipe) {
-    if (!remap_pipe_stdin_stdout(infd, outfd)) {
-      perror("dup2");
-      return;
-    }
+    return;
   }
   else {
-    if (outfd != 1) {
-      if (dup2(outfd, 1) == -1) {
-        perror("dup2 outfile");
-        exit(0);
+    if (cmd->infile != "") {
+      cmd->infd = open(cmd->infile.c_str(), O_RDONLY);
+      if (cmd->infd < 0) {
+        perror("infile");
+        return;
       }
-    }
-    if (infd != 0) {
-      if (dup2(infd, 0) == -1) {
+      if (dup2(cmd->infd, 0) == -1) {
         perror("dup2 infile");
         exit(0);
       }
     }
+    else cmd->infd = 0;
+
+    if (cmd->outfile != "") {
+      cmd->outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
+      if (cmd->outfd < 0) {
+        perror("outfile");
+        return;
+      }
+      if (dup2(cmd->outfd, 1) == -1) {
+        perror("dup2 outfile");
+        exit(0);
+      }
+    }
+    else cmd->outfd = 1;
   }
 }
+
+
+
 
 
 
@@ -179,7 +137,6 @@ int expand_and_execute (simple_command *cmd) {
       /* This is the child process.  Execute the command. */
       // int in = 0, out = 1;
       check_cmd_io(cmd);
-      dup_io(cmd->infd, cmd->outfd);
 
       execvp (result.we_wordv[0], result.we_wordv);
       exit (EXIT_FAILURE);
@@ -195,7 +152,6 @@ int expand_and_execute (simple_command *cmd) {
   wordfree (&result);
   return status;
 }
-
 
 
 

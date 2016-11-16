@@ -59,9 +59,9 @@ int main(int argc, char **argv){
             command *cmd = parse(split(it.c_str()));
             int num_cmds = cmd->cmds.size();
             // debug info
-            print_cmd(cmd);
+            // print_cmd(cmd);
 
-            // clear line var
+            // clear line var cause we already parsed it
             free(line);
             line = (char*)NULL;
 
@@ -74,8 +74,8 @@ int main(int argc, char **argv){
 
                 int in = 0, fd[2];
                 for (int i = 0; i < num_cmds-1; i++) {
-                    if (!pipe(fd)) perror("pipe");
-                    // dup_io(in, fd[1]);
+                    if (pipe(fd)) perror("pipe");
+                    cmd->cmds[i].ispipe = true;
                     cmd->cmds[i].infd = in;
                     cmd->cmds[i].outfd = fd[1];
                     expand_and_execute(&cmd->cmds[i]);
@@ -83,13 +83,14 @@ int main(int argc, char **argv){
                     in = fd[0];
                 }
                 if (in != 0) {
-                    // dup_io(in, 1);
+                    cmd->cmds[num_cmds-1].ispipe = true;
                     cmd->cmds[num_cmds-1].infd = in;
                     cmd->cmds[num_cmds-1].outfd = 1;
                     expand_and_execute(&cmd->cmds[num_cmds-1]);
                 }
             }
             else {
+                cmd->cmds[0].ispipe = false;
                 expand_and_execute(&cmd->cmds[0]);
             }
 

@@ -14,6 +14,7 @@ struct simple_command {
   string outfile;
   int infd;
   int outfd;
+  bool ispipe;
 };
 // command struct
 struct command {
