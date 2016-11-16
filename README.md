@@ -69,7 +69,7 @@ The Shell Assignment (total 42 points)
 + 2 Only runs execuatables from an approved list
 + -2  Commands cannot have arguments (i.e. ls -l does not work).
     
-14 pts
+20 pts
 /20
 
 Some cases to consider
