@@ -53,10 +53,10 @@ int main(int argc, char **argv){
         if (line && *line) add_history (line);
 
         // handle multiple commands w/ semicolon
-        vector<string> wfwe = split(line, ';');
-        for (auto it: wfwe) {
+        vector<string> semicolon_split = split(line, ';');
+        for (auto semicolon_iter: semicolon_split) {
 
-            command *cmd = parse(split(it.c_str()));
+            command *cmd = parse(split(semicolon_iter.c_str()));
             int num_cmds = cmd->cmds.size();
             // debug info
             // print_cmd(cmd);
@@ -78,16 +78,15 @@ int main(int argc, char **argv){
             }
 
             if (num_cmds > 1) {
-
-                int in = 0, fd[2];
+                int in = 0, pipefd[2];
                 for (int i = 0; i < num_cmds-1; i++) {
-                    if (pipe(fd)) perror("pipe");
+                    if (pipe(pipefd)) perror("pipe");
                     cmd->cmds[i].ispipe = true;
                     cmd->cmds[i].infd = in;
-                    cmd->cmds[i].outfd = fd[1];
+                    cmd->cmds[i].outfd = pipefd[1];
                     expand_and_execute(&cmd->cmds[i]);
-                    close(fd[1]);
-                    in = fd[0];
+                    close(pipefd[1]);
+                    in = pipefd[0];
                 }
                 if (in != 0) {
                     cmd->cmds[num_cmds-1].ispipe = true;
@@ -101,8 +100,6 @@ int main(int argc, char **argv){
                 expand_and_execute(&cmd->cmds[0]);
             }
 
-
-
             // else if (strcmp(cmd->cmds[0]->args[0], ".") == 0 || strcmp(cmd->cmds[0]->args[0], "source") == 0) {
             //   int dotsrcfile = open(cmd->cmds[0]->args[1], O_RDONLY);
             //   if (dotsrcfile < 0) {
@@ -112,8 +109,6 @@ int main(int argc, char **argv){
             //   // do the thing to read the files
             // }
 
-
-
             // reset args array for the next prompt
             delete cmd;
 
@@ -121,6 +116,5 @@ int main(int argc, char **argv){
     } // end main while loop
     cout << endl;
     if (write_history(histpath.c_str())) perror("write_history");
-
     return 0;
 }

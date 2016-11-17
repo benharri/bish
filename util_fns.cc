@@ -49,6 +49,7 @@ char** v_to_cpp(vector<string> vargs) {
 
 
 void check_cmd_io(simple_command *cmd) {
+  // do all the io redirs n stuff
   if (cmd->ispipe) {
     if (!remap_pipe_stdin_stdout(cmd->infd, cmd->outfd)) {
       // perror("dup2-remap_pipe_stdin_stdout");
@@ -87,6 +88,7 @@ void check_cmd_io(simple_command *cmd) {
 
 
 
+// this method adapted from
 // http://www.gnu.org/software/libc/manual/html_node/Wordexp-Example.html
 int expand_and_execute (simple_command *cmd) {
   const char *program = cmd->vargs[0].c_str();
@@ -134,7 +136,7 @@ int expand_and_execute (simple_command *cmd) {
   if (pid == 0) {
       /* This is the child process.  Execute the command. */
       check_cmd_io(cmd);
-      execvp (result.we_wordv[0], result.we_wordv);
+      execvp(result.we_wordv[0], result.we_wordv);
       cout << "that's not a command, bish" << endl;
       exit (EXIT_FAILURE);
   }
