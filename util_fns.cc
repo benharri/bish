@@ -61,7 +61,7 @@ void check_cmd_io(simple_command *cmd) {
       cmd->infd = open(cmd->infile.c_str(), O_RDONLY);
       if (cmd->infd < 0) {
         perror("infile");
-        return;
+        exit(1);
       }
       if (dup2(cmd->infd, 0) == -1) {
         perror("dup2 infile");
@@ -74,7 +74,7 @@ void check_cmd_io(simple_command *cmd) {
       cmd->outfd = open(cmd->outfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
       if (cmd->outfd < 0) {
         perror("outfile");
-        return;
+        exit(1);
       }
       if (dup2(cmd->outfd, 1) == -1) {
         perror("dup2 outfile");
@@ -136,8 +136,17 @@ int expand_and_execute (simple_command *cmd) {
   if (pid == 0) {
       /* This is the child process.  Execute the command. */
       check_cmd_io(cmd);
-      execvp(result.we_wordv[0], result.we_wordv);
-      cout << "that's not a command, bish" << endl;
+      execv(result.we_wordv[0], result.we_wordv);
+
+      vector<string> path = split(getenv("PATH"), ':');
+      stringstream searchpath;
+      for (auto iter: path) {
+        searchpath.str("");
+        searchpath << iter << "/" << result.we_wordv[0];
+        execv(searchpath.str().c_str(), result.we_wordv);
+      }
+
+      cout << "command not found, bish" << endl;
       exit (EXIT_FAILURE);
   }
   else if (pid < 0)
